@@ -5,7 +5,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["dist/**", "build/**", "artifacts/**", "node_modules/**", "bun.lock"],
+    ignores: ["build/**", ".svelte-kit/**", "node_modules/**", "bun.lock"],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

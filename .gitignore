@@ -1,7 +1,11 @@
-artifacts
 node_modules/
-dist/
 build/
-.electrobun/
+.svelte-kit/
+vite.config.ts.timestamp-*
 *.log
 .DS_Store
+
+# Restos locales de la app de escritorio (Electrobun), ver tag desktop-final.
+artifacts
+dist/
+.electrobun/

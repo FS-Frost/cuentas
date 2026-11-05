@@ -4,35 +4,30 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build:web": "vite build",
-    "dev:web": "vite build --watch",
-    "dev": "bun run build:web && electrobun dev",
-    "app:run": "electrobun run",
-    "build": "bun run make:icon && bun run patch:icons && bun run build:web && electrobun build --env=stable",
-    "build:canary": "bun run make:icon && bun run patch:icons && bun run build:web && electrobun build --env=canary",
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
     "make:icon": "bun run scripts/make-icon.ts",
-    "patch:icons": "bun run scripts/patch-electrobun-icons.ts",
     "test": "bun test",
-    "typecheck": "tsc --noEmit",
-    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "typecheck": "svelte-kit sync && tsc --noEmit",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "lint": "bun run check && eslint ."
-  },
-  "dependencies": {
-    "electrobun": "^1.18.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@sveltejs/vite-plugin-svelte": "^5.0.0",
-    "@tailwindcss/vite": "^4.0.0",
+    "@sveltejs/adapter-static": "^3.0.10",
+    "@sveltejs/kit": "^2.58.0",
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "@tailwindcss/vite": "^4.3.4",
+    "@types/bun": "^1.4.4",
     "eslint": "^10.6.0",
     "eslint-plugin-svelte": "^3.20.0",
     "globals": "^17.7.0",
-    "pdfjs-dist": "^4.10.38",
-    "svelte": "^5.0.0",
-    "svelte-check": "^4.0.0",
-    "tailwindcss": "^4.0.0",
+    "svelte": "^5.55.5",
+    "svelte-check": "^4.4.6",
+    "tailwindcss": "^4.3.4",
     "typescript": "^5.6.0",
     "typescript-eslint": "^8.63.0",
-    "vite": "^6.0.0"
+    "vite": "^8.0.10"
   }
 }

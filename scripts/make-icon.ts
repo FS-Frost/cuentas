@@ -1,20 +1,20 @@
-// Genera un ícono placeholder para la app sin depender de herramientas de imagen
-// externas: dibuja un PNG 256x256 por manipulación de píxeles y lo convierte a
-// .ico multi-tamaño con png-to-ico (dependencia ya presente vía electrobun).
+// Genera los íconos de la PWA (static/icon-192.png y static/icon-512.png) sin
+// depender de herramientas de imagen externas: dibuja por manipulación de
+// píxeles y codifica PNG a mano.
 //
-// Uso: bun run scripts/make-icon.ts
-// Reemplaza el diseño sobrescribiendo assets/icon.png con el tuyo, o deja tu
-// propio assets/icon.ico y omite este script.
+// Uso: bun run make:icon
+// Para usar tu propio diseño, reemplaza esos dos PNG y omite este script.
 
 import { deflateSync } from "node:zlib";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import pngToIco from "png-to-ico";
 
-const SIZE = 256;
+// El diseño está en coordenadas de una grilla de 256 px y se escala a cada tamaño.
+const DESIGN = 256;
+const SIZES = [192, 512];
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const ASSETS = path.join(ROOT, "assets");
+const OUT_DIR = path.join(ROOT, "static");
 
 type RGBA = [number, number, number, number];
 
@@ -24,79 +24,72 @@ const WHITE: RGBA = [255, 255, 255, 255];
 const GRAY: RGBA = [148, 163, 184, 255]; // #94a3b8
 const GREEN: RGBA = [16, 185, 129, 255]; // #10b981 (check)
 
-function createCanvas(): Uint8Array {
-  // RGBA, todo transparente al inicio.
-  return new Uint8Array(SIZE * SIZE * 4);
-}
-
-function setPx(buf: Uint8Array, x: number, y: number, [r, g, b, a]: RGBA) {
-  if (x < 0 || y < 0 || x >= SIZE || y >= SIZE) return;
-  const i = (y * SIZE + x) * 4;
-  // Composición simple sobre lo existente (alpha over).
-  const sa = a / 255;
-  const da = buf[i + 3] / 255;
-  const outA = sa + da * (1 - sa);
-  if (outA === 0) {
-    buf[i] = buf[i + 1] = buf[i + 2] = buf[i + 3] = 0;
-    return;
+class Canvas {
+  readonly buf: Uint8Array;
+  constructor(readonly size: number) {
+    // RGBA, todo transparente al inicio.
+    this.buf = new Uint8Array(size * size * 4);
   }
-  buf[i] = Math.round((r * sa + buf[i] * da * (1 - sa)) / outA);
-  buf[i + 1] = Math.round((g * sa + buf[i + 1] * da * (1 - sa)) / outA);
-  buf[i + 2] = Math.round((b * sa + buf[i + 2] * da * (1 - sa)) / outA);
-  buf[i + 3] = Math.round(outA * 255);
+
+  setPx(x: number, y: number, [r, g, b, a]: RGBA) {
+    const { buf, size } = this;
+    if (x < 0 || y < 0 || x >= size || y >= size) return;
+    const i = (y * size + x) * 4;
+    // Composición simple sobre lo existente (alpha over).
+    const sa = a / 255;
+    const da = buf[i + 3] / 255;
+    const outA = sa + da * (1 - sa);
+    if (outA === 0) {
+      buf[i] = buf[i + 1] = buf[i + 2] = buf[i + 3] = 0;
+      return;
+    }
+    buf[i] = Math.round((r * sa + buf[i] * da * (1 - sa)) / outA);
+    buf[i + 1] = Math.round((g * sa + buf[i + 1] * da * (1 - sa)) / outA);
+    buf[i + 2] = Math.round((b * sa + buf[i + 2] * da * (1 - sa)) / outA);
+    buf[i + 3] = Math.round(outA * 255);
+  }
 }
 
-function fillRoundedRect(
-  buf: Uint8Array,
-  x0: number,
-  y0: number,
-  w: number,
-  h: number,
-  radius: number,
-  color: RGBA,
-) {
-  for (let y = y0; y < y0 + h; y++) {
-    for (let x = x0; x < x0 + w; x++) {
-      // Recorte de esquinas redondeadas.
-      const dxL = x0 + radius - x;
-      const dxR = x - (x0 + w - 1 - radius);
-      const dyT = y0 + radius - y;
-      const dyB = y - (y0 + h - 1 - radius);
-      let inside = true;
-      if (dxL > 0 && dyT > 0) inside = dxL * dxL + dyT * dyT <= radius * radius;
-      else if (dxR > 0 && dyT > 0) inside = dxR * dxR + dyT * dyT <= radius * radius;
-      else if (dxL > 0 && dyB > 0) inside = dxL * dxL + dyB * dyB <= radius * radius;
-      else if (dxR > 0 && dyB > 0) inside = dxR * dxR + dyB * dyB <= radius * radius;
-      if (inside) setPx(buf, x, y, color);
+/** true si (x, y) cae dentro del rectángulo redondeado. */
+function insideRounded(x: number, y: number, x0: number, y0: number, w: number, h: number, r: number) {
+  if (x < x0 || y < y0 || x >= x0 + w || y >= y0 + h) return false;
+  const dxL = x0 + r - x;
+  const dxR = x - (x0 + w - 1 - r);
+  const dyT = y0 + r - y;
+  const dyB = y - (y0 + h - 1 - r);
+  if (dxL > 0 && dyT > 0) return dxL * dxL + dyT * dyT <= r * r;
+  if (dxR > 0 && dyT > 0) return dxR * dxR + dyT * dyT <= r * r;
+  if (dxL > 0 && dyB > 0) return dxL * dxL + dyB * dyB <= r * r;
+  if (dxR > 0 && dyB > 0) return dxR * dxR + dyB * dyB <= r * r;
+  return true;
+}
+
+function drawIcon(size: number): Uint8Array {
+  const c = new Canvas(size);
+  const k = size / DESIGN; // escala diseño → píxeles
+  const s = (v: number) => Math.round(v * k);
+
+  function fillRoundedRect(x0: number, y0: number, w: number, h: number, r: number, color: RGBA) {
+    const [X, Y, W, H, R] = [s(x0), s(y0), s(w), s(h), s(r)];
+    for (let y = Y; y < Y + H; y++) {
+      for (let x = X; x < X + W; x++) {
+        if (insideRounded(x, y, X, Y, W, H, R)) c.setPx(x, y, color);
+      }
     }
   }
-}
-
-function drawIcon(): Uint8Array {
-  const buf = createCanvas();
 
   // Fondo redondeado (degradado vertical sutil azul).
-  for (let y = 0; y < SIZE; y++) {
-    const t = y / SIZE;
+  const R = s(48);
+  for (let y = 0; y < size; y++) {
+    const t = y / size;
     const color: RGBA = [
       Math.round(BLUE[0] * (1 - t) + BLUE_DARK[0] * t),
       Math.round(BLUE[1] * (1 - t) + BLUE_DARK[1] * t),
       Math.round(BLUE[2] * (1 - t) + BLUE_DARK[2] * t),
       255,
     ];
-    for (let x = 0; x < SIZE; x++) {
-      // Máscara de esquina redondeada del fondo.
-      const r = 48;
-      const dxL = r - x;
-      const dxR = x - (SIZE - 1 - r);
-      const dyT = r - y;
-      const dyB = y - (SIZE - 1 - r);
-      let inside = true;
-      if (dxL > 0 && dyT > 0) inside = dxL * dxL + dyT * dyT <= r * r;
-      else if (dxR > 0 && dyT > 0) inside = dxR * dxR + dyT * dyT <= r * r;
-      else if (dxL > 0 && dyB > 0) inside = dxL * dxL + dyB * dyB <= r * r;
-      else if (dxR > 0 && dyB > 0) inside = dxR * dxR + dyB * dyB <= r * r;
-      if (inside) setPx(buf, x, y, color);
+    for (let x = 0; x < size; x++) {
+      if (insideRounded(x, y, 0, 0, size, size, R)) c.setPx(x, y, color);
     }
   }
 
@@ -105,7 +98,7 @@ function drawIcon(): Uint8Array {
   const pageY = 58;
   const pageW = 108;
   const pageH = 140;
-  fillRoundedRect(buf, pageX, pageY, pageW, pageH, 10, WHITE);
+  fillRoundedRect(pageX, pageY, pageW, pageH, 10, WHITE);
 
   // Líneas de texto (grises) en la hoja.
   const lineX = pageX + 18;
@@ -113,29 +106,25 @@ function drawIcon(): Uint8Array {
   for (let n = 0; n < 4; n++) {
     const ly = pageY + 30 + n * 22;
     const w = n === 3 ? Math.round(lineW * 0.55) : lineW;
-    fillRoundedRect(buf, lineX, ly, w, 8, 4, GRAY);
+    fillRoundedRect(lineX, ly, w, 8, 4, GRAY);
   }
 
-  // Check verde (marca de "pagado") abajo a la derecha de la hoja.
+  // Check verde (marca de "pagado") abajo a la derecha de la hoja: dos trazos con grosor.
   const cx = pageX + pageW - 34;
   const cy = pageY + pageH - 34;
-  for (let i = 0; i < 16; i++) {
-    // Trazo corto ascendente + trazo largo.
-    setPx(buf, cx - 10 + i * 0, cy, GREEN);
-  }
-  // Dibujo del check con dos segmentos y grosor.
-  for (let t = 0; t <= 12; t++) {
-    const x = cx - 12 + t;
-    const y = cy - 2 + t;
-    for (let g = -2; g <= 2; g++) setPx(buf, x, y + g, GREEN);
-  }
-  for (let t = 0; t <= 20; t++) {
-    const x = cx + t;
-    const y = cy + 10 - t;
-    for (let g = -2; g <= 2; g++) setPx(buf, x, y + g, GREEN);
-  }
+  const thick = Math.max(2, s(2));
+  const stroke = (x1: number, y1: number, x2: number, y2: number) => {
+    const steps = Math.max(Math.abs(s(x2) - s(x1)), Math.abs(s(y2) - s(y1)));
+    for (let i = 0; i <= steps; i++) {
+      const x = Math.round(s(x1) + ((s(x2) - s(x1)) * i) / steps);
+      const y = Math.round(s(y1) + ((s(y2) - s(y1)) * i) / steps);
+      for (let g = -thick; g <= thick; g++) c.setPx(x, y + g, GREEN);
+    }
+  };
+  stroke(cx - 12, cy - 2, cx, cy + 10);
+  stroke(cx, cy + 10, cx + 20, cy - 10);
 
-  return buf;
+  return c.buf;
 }
 
 // ---------------------------------------------------------------------------
@@ -172,12 +161,12 @@ function chunk(type: string, data: Uint8Array): Uint8Array {
   return out;
 }
 
-function encodePng(rgba: Uint8Array): Uint8Array {
+function encodePng(rgba: Uint8Array, size: number): Uint8Array {
   // IHDR
   const ihdr = new Uint8Array(13);
   const dv = new DataView(ihdr.buffer);
-  dv.setUint32(0, SIZE); // width
-  dv.setUint32(4, SIZE); // height
+  dv.setUint32(0, size); // width
+  dv.setUint32(4, size); // height
   ihdr[8] = 8; // bit depth
   ihdr[9] = 6; // color type RGBA
   ihdr[10] = 0; // compression
@@ -185,10 +174,10 @@ function encodePng(rgba: Uint8Array): Uint8Array {
   ihdr[12] = 0; // interlace
 
   // Datos con filtro 0 por fila.
-  const raw = new Uint8Array(SIZE * (SIZE * 4 + 1));
-  for (let y = 0; y < SIZE; y++) {
-    raw[y * (SIZE * 4 + 1)] = 0; // filtro None
-    raw.set(rgba.subarray(y * SIZE * 4, (y + 1) * SIZE * 4), y * (SIZE * 4 + 1) + 1);
+  const raw = new Uint8Array(size * (size * 4 + 1));
+  for (let y = 0; y < size; y++) {
+    raw[y * (size * 4 + 1)] = 0; // filtro None
+    raw.set(rgba.subarray(y * size * 4, (y + 1) * size * 4), y * (size * 4 + 1) + 1);
   }
   const idatData = deflateSync(raw); // zlib stream (lo que PNG espera)
 
@@ -212,17 +201,13 @@ function encodePng(rgba: Uint8Array): Uint8Array {
 // ---------------------------------------------------------------------------
 
 async function main() {
-  await fs.mkdir(ASSETS, { recursive: true });
-
-  const png = encodePng(drawIcon());
-  const pngPath = path.join(ASSETS, "icon.png");
-  await fs.writeFile(pngPath, png);
-  console.log(`✓ ${path.relative(ROOT, pngPath)} (${png.length} bytes)`);
-
-  const ico = await pngToIco(pngPath);
-  const icoPath = path.join(ASSETS, "icon.ico");
-  await fs.writeFile(icoPath, ico);
-  console.log(`✓ ${path.relative(ROOT, icoPath)} (${ico.length} bytes)`);
+  await fs.mkdir(OUT_DIR, { recursive: true });
+  for (const size of SIZES) {
+    const png = encodePng(drawIcon(size), size);
+    const out = path.join(OUT_DIR, `icon-${size}.png`);
+    await fs.writeFile(out, png);
+    console.log(`✓ ${path.relative(ROOT, out)} (${png.length} bytes)`);
+  }
 }
 
 await main();

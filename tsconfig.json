@@ -1,19 +1,18 @@
 {
+  "extends": "./.svelte-kit/tsconfig.json",
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "types": ["bun", "svelte"],
-    "strict": true,
-    "noUnusedLocals": false,
+    "allowJs": true,
+    "checkJs": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "verbatimModuleSyntax": false,
-    "allowImportingTsExtensions": true,
-    "noEmit": true
-  },
-  "include": ["src", "tests", "electrobun.config.ts", "vite.config.ts"]
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "moduleResolution": "bundler",
+    "lib": ["ESNext", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
+    "types": ["bun", "svelte"]
+  }
+  // Los alias ($lib, etc.) y los include (src/, tests/) los define
+  // .svelte-kit/tsconfig.json, generado por `svelte-kit sync`.
 }

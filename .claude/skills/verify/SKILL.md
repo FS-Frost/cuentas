@@ -1,37 +1,65 @@
 ---
 name: verify
-description: Build/launch recipe for the Cuentas Electrobun desktop app
+description: Build/launch/smoke-test recipe for the Cuentas PWA (SvelteKit static + File System Access API)
 ---
 
 # Verifying changes in Cuentas
 
-This is an Electrobun (Bun + native WebView2) desktop app. The frontend
-(`src/mainview`, Svelte 5) has no standalone browser dev server — it talks to
-the Bun backend (`src/bun/index.ts`) over Electrobun's RPC bridge, so it must
-run inside the real app shell, not a plain `vite dev`.
+Cuentas is a static SvelteKit PWA. All logic runs in the browser over the
+File System Access API (Chrome/Edge only). Domain logic is tested in Node via
+`tests/support/nodeFs.ts`.
 
-## Build + launch
+## 1. Static checks + tests (always)
 
 ```bash
-bun run build:web   # vite build -> dist/ (must succeed, this is the real compile of src/mainview)
-bun run app:run      # electrobun run -> spawns build/dev-win-x64/Cuentas-dev/bin/bun.exe + opens a native WebView2 window
+bun run lint     # svelte-kit sync + svelte-check + eslint
+bun test
 ```
 
-`bun run dev` does both (`build:web && electrobun dev`) and also watches.
+## 2. Production build (same as CI)
 
-Console output (bun backend logs, and JS console from the webview in dev
-builds) is printed to the terminal that launched it — useful for catching
-import/runtime errors during boot without needing to see the window.
+```bash
+rm -rf build
+MSYS_NO_PATHCONV=1 BASE_PATH=/cuentas bun run build   # MSYS_NO_PATHCONV only needed in Git Bash
+```
+
+`build/` must contain `index.html`, `404.html`, `service-worker.js`,
+`manifest.webmanifest`, `icon-192.png`, `icon-512.png`, `_app/`.
+
+## 3. Smoke test in a real browser (headless Edge via CDP)
+
+`msedge --dump-dom` is NOT reliable here (it snapshots before IndexedDB
+resolves and shows "Cargando…"). Use a CDP script instead:
+
+1. Serve: `MSYS_NO_PATHCONV=1 BASE_PATH=/cuentas bunx vite preview --port 4173 --strictPort` (background).
+2. Launch `C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe --headless=new
+   --remote-debugging-port=9333 --user-data-dir=<temp>`, connect to the page's
+   `webSocketDebuggerUrl`, `Page.navigate` to `http://localhost:4173/cuentas/`,
+   wait ~4s, then `Runtime.evaluate`:
+   - `document.body.innerText` → must show "Bienvenido a Cuentas".
+   - `navigator.serviceWorker.getRegistration()` → active.
+   - Collect `Runtime.exceptionThrown` / console errors → must be none.
+
+### Exercising the real browser Fs (no folder picker needed)
+
+The directory picker needs a human gesture, but OPFS
+(`navigator.storage.getDirectory()`) exposes the same `FileSystemDirectoryHandle`
+API. With `bunx vite dev --port 5000` running, evaluate in the page:
+
+```js
+const { browserFs } = await import("/src/lib/fs/browser.ts");
+const acc = await import("/src/lib/domain/accounts.ts");
+const root = await (await navigator.storage.getDirectory()).getDirectoryHandle("t", { create: true });
+const fs = browserFs(root);           // delete fs.move to force the copy+delete fallback
+await acc.createPeriod(fs, "2026");   // …then createService/importFiles/renameEntry/deleteEntry
+```
+
+Clean up with `removeEntry("t", { recursive: true })`.
 
 ## Known gap
 
-There is no screenshot/computer-use tool available to this agent for driving
-a native Windows GUI window (the WebView2 surface isn't reachable via
-Playwright/browser automation — it's not a normal browser tab). So:
-- Build success + clean boot logs (no uncaught errors during load) is the
-  strongest signal obtainable without a human.
-- Actually clicking through UI flows (buttons, modals, forms) requires a
-  human to run `bun run dev` and interact with the window directly.
+Picking a real folder (`showDirectoryPicker`), the permission prompt, opening a
+PDF in a new tab and PWA install all need a human in Chrome/Edge. Ask the user
+to check those manually on a **copy** of their accounts folder.
 
-If a GUI automation/screenshot tool becomes available in a future session,
-prefer driving the real window over this workaround.
+Stop background servers when done (ports 5000 / 4173).
