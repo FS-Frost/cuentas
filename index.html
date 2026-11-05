@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#2563eb" />
+    <link rel="icon" href="./icon-192.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <title>Cuentas</title>
+    <link href="./_app/immutable/entry/start.DD4JDwge.js" rel="modulepreload">
+		<link href="./_app/immutable/chunks/BFnMIT5G.js" rel="modulepreload">
+		<link href="./_app/immutable/chunks/80rSmpCR.js" rel="modulepreload">
+		<link href="./_app/immutable/entry/app.BZfzRA63.js" rel="modulepreload">
+		<link href="./_app/immutable/chunks/xihTtKlq.js" rel="modulepreload">
+		<link href="./_app/immutable/nodes/0.Dqh4uXwj.js" rel="modulepreload">
+		<link href="./_app/immutable/nodes/2.DzHUUu4d.js" rel="modulepreload">
+		
+		<link href="./_app/immutable/assets/0.BbyfPYc6.css" rel="stylesheet">
+  </head>
+  <body data-sveltekit-preload-data="hover">
+    <div id="app" style="display: contents">
+			<script>
+				{
+					__sveltekit_1seu8tt = {
+						base: new URL(".", location).pathname.slice(0, -1),
+						assets: "/cuentas"
+					};
+
+					const element = document.currentScript.parentElement;
+
+					Promise.all([
+						import("./_app/immutable/entry/start.DD4JDwge.js"),
+						import("./_app/immutable/entry/app.BZfzRA63.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element);
+					});
+
+					if ('serviceWorker' in navigator) {
+						const script_url = './service-worker.js';
+						const policy = globalThis?.window?.trustedTypes?.createPolicy(
+							'sveltekit-trusted-url',
+							{ createScriptURL(url) { return url; } }
+						);
+						const sanitised = policy?.createScriptURL(script_url) ?? script_url;
+						addEventListener('load', function () {
+							navigator.serviceWorker.register(sanitised);
+						});
+					}
+				}
+			</script>
+		</div>
+  </body>
+</html>
