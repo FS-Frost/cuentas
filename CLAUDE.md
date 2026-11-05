@@ -39,9 +39,10 @@ Todo corre en el navegador; no hay backend. Capas:
   - `port.ts` — interfaz `Fs` (rutas como arrays de segmentos relativos a la raíz) y `renameWithFallback` (intenta `move()` nativo; si no existe o falla, copia recursiva + borrado).
   - `browser.ts` — `Fs` sobre `FileSystemDirectoryHandle`. Escrituras con `createWritable()` (atómicas).
   - `fs-access.d.ts` — tipos de la API que lib.dom aún no trae (`showDirectoryPicker`, permisos, `move`).
-- **`src/lib/root.ts`** — selección de la carpeta raíz, persistencia del handle en IndexedDB y permisos (`unsupported` / `none` / `needs-permission` / `ready`).
+- **`src/lib/root.ts`** — selección de la carpeta raíz (`chooseFolder`, sin guardar), persistencia del handle en IndexedDB (`saveRoot`, solo tras validar) y permisos (`unsupported` / `none` / `needs-permission` / `ready`).
 - **`src/lib/api.ts`** — fachada que usa la UI: un método por operación, devuelve `OpResult` (o variantes con contador) en vez de lanzar. Opera sobre el `Fs` activo (`setFs`).
 - **`src/lib/store.svelte.ts`** — estado global de UI (runes). Sin watcher: refresca al volver el foco a la ventana (`focus`/`visibilitychange`) y con el botón Recargar; `refreshTick` avisa a los paneles abiertos.
+  - `pickRoot(mode)` — `"existing"` (ya tiene carpeta; también lo usa "Cambiar carpeta") o `"new"` (empezar desde cero: crea el año actual con sus 12 meses). Antes de guardar valida con `accounts.inspectRoot`: si la carpeta parece un año (nombre de 4 dígitos o contiene carpetas de mes, y sin periodos propios) muestra `rootWarning` y no la usa; en `"new"`, si no está vacía (entradas que no son periodos ni ocultos/sistema) pide confirmación (`pendingStart` → `confirmStart`/`cancelStart`); si ya tiene periodos, la abre tal cual.
 - **`src/lib/openFile.ts`** — abrir comprobantes: PDF/imagen en pestaña nueva (blob con MIME por extensión; la pestaña se abre antes del `await` para no perder el gesto del usuario), el resto se descarga.
 - **`src/lib/components/`** — un componente por vista/panel.
 - **`src/routes/`** — una sola ruta (`+page.svelte`), `prerender = true`, `ssr = false`.
@@ -68,5 +69,5 @@ Para agregar una operación: lógica en `domain/accounts.ts` (con test en `tests
 ## Notas de código
 
 - `tsconfig.json` extiende `.svelte-kit/tsconfig.json` (generado por `svelte-kit sync`); incluye `src/` y `tests/`. `lib` agrega `DOM.AsyncIterable` para iterar directorios.
-- ESLint (`eslint.config.js`) desactiva `no-unused-vars` en favor de `@typescript-eslint/no-unused-vars` con `argsIgnorePattern: "^_"` — parámetros no usados se prefijan con `_`.
+- ESLint (`eslint.config.js`) desactiva `no-unused-vars` en favor de `@typescript-eslint/no-unused-vars` con `argsIgnorePattern: "^_"` — parámetros no usados se prefijan con `_`. `svelte/no-navigation-without-resolve` ignora `<a href>` (app de una sola ruta; los únicos enlaces son externos, ej. GitHub vía `GITHUB_URL` en `store.svelte.ts`).
 - Los íconos de la PWA se generan con `scripts/make-icon.ts` (PNG a mano, sin dependencias); para un diseño propio, reemplazar `static/icon-*.png`.

@@ -2,6 +2,7 @@
 
 import { api, setFs } from "./api";
 import { browserFs } from "./fs/browser";
+import { createPeriod, inspectRoot } from "./domain/accounts";
 import * as rootStore from "./root";
 import { pushToast } from "./toast.svelte";
 import { SvelteSet } from "svelte/reactivity";
@@ -14,6 +15,11 @@ import type {
 
 /** Estado de acceso a la carpeta raíz (ver Onboarding.svelte). */
 export type RootStatus = "unsupported" | "none" | "needs-permission" | "ready";
+
+/** Cómo se eligió la carpeta en el inicio. */
+export type StartMode = "existing" | "new";
+
+export const GITHUB_URL = "https://github.com/FS-Frost/cuentas";
 
 // Mínimo entre refrescos disparados por foco/visibilidad (evita dobles disparos).
 const FOCUS_REFRESH_MIN_MS = 1000;
@@ -56,6 +62,10 @@ class AppStore {
   rootName = $state<string | null>(null);
   /** Se incrementa en cada refresco externo (foco, botón Recargar) para que los paneles recarguen. */
   refreshTick = $state(0);
+  /** Aviso a mostrar en el inicio tras elegir una carpeta inválida. */
+  rootWarning = $state<string | null>(null);
+  /** "Empezar desde cero" con una carpeta no vacía: espera confirmación. */
+  pendingStart = $state<{ handle: FileSystemDirectoryHandle; otherEntries: number } | null>(null);
   private pendingHandle: FileSystemDirectoryHandle | null = null;
   private lastFocusRefresh = 0;
 
@@ -118,16 +128,75 @@ class AppStore {
     await this.loadAll();
   }
 
-  /** Elegir (o cambiar) la carpeta raíz. Llamar desde un click. */
-  async pickRoot(): Promise<void> {
+  /**
+   * Elegir la carpeta raíz. Llamar desde un click.
+   * - "existing": el usuario ya tiene su carpeta de cuentas.
+   * - "new": empezar desde cero; se crea el año actual con sus 12 meses.
+   * La carpeta se valida antes de guardarse (ver accounts.inspectRoot).
+   */
+  async pickRoot(mode: StartMode = "existing"): Promise<void> {
+    this.rootWarning = null;
     try {
-      const handle = await rootStore.pickRoot();
+      const handle = await rootStore.chooseFolder();
       if (!handle) return;
-      await this.useRoot(handle);
-      pushToast("Carpeta configurada.", "success");
+      const info = await inspectRoot(browserFs(handle), handle.name);
+
+      if (info.looksLikeYear) {
+        const msg = `«${handle.name}» parece la carpeta de un año, no la carpeta raíz. Elige la carpeta que contiene los años (ej. la que tiene «2025», «2026»…).`;
+        this.rootWarning = msg;
+        if (this.rootStatus === "ready") pushToast(msg, "error");
+        return;
+      }
+
+      if (mode === "new" && info.periods.length === 0 && info.otherEntries > 0) {
+        // Onboarding muestra la confirmación (ver confirmStart / cancelStart).
+        this.pendingStart = { handle, otherEntries: info.otherEntries };
+        return;
+      }
+
+      await this.commitRoot(handle, mode === "new" && info.periods.length === 0);
+      if (mode === "new" && info.periods.length > 0) {
+        pushToast("Esta carpeta ya tenía periodos; se abrió tal cual.", "info");
+      }
     } catch (e) {
       pushToast(e instanceof Error ? e.message : "No se pudo abrir la carpeta.", "error");
     }
+  }
+
+  /** Confirmó usar una carpeta no vacía para empezar desde cero. */
+  async confirmStart(): Promise<void> {
+    const pending = this.pendingStart;
+    if (!pending) return;
+    try {
+      await this.commitRoot(pending.handle, true);
+    } catch (e) {
+      pushToast(e instanceof Error ? e.message : "No se pudo preparar la carpeta.", "error");
+    } finally {
+      this.pendingStart = null;
+    }
+  }
+
+  cancelStart(): void {
+    this.pendingStart = null;
+  }
+
+  /** Guarda la carpeta como raíz y, si corresponde, crea el año actual. */
+  private async commitRoot(handle: FileSystemDirectoryHandle, createBase: boolean): Promise<void> {
+    await rootStore.saveRoot(handle);
+    if (createBase) {
+      const year = String(new Date().getFullYear());
+      await createPeriod(browserFs(handle), year);
+      this.period = year;
+      this.monthNN = pad2(new Date().getMonth() + 1);
+      this.view = "dashboard";
+    }
+    await this.useRoot(handle);
+    pushToast(
+      createBase
+        ? `Carpeta lista: se creó ${this.period} con sus 12 meses. Agrega tus cuentas con «+ Servicio».`
+        : "Carpeta configurada.",
+      "success",
+    );
   }
 
   /** Volver a pedir permiso sobre la carpeta guardada. Llamar desde un click. */

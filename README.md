@@ -23,7 +23,11 @@ API: **tus archivos nunca salen de tu equipo** (el sitio es estático, sin backe
 
 ## Características
 
-- Carpeta raíz elegida una vez y recordada (puede pedir "Reconectar" con un clic al volver).
+- Al inicio: **"Ya tengo mi carpeta"** (elige la carpeta que contiene los años) o
+  **"Empezar desde cero"** (elige una carpeta vacía y la app crea el año actual con sus
+  12 meses; después agregas tus cuentas con «+ Servicio»). Si eliges por error la
+  carpeta de un año (ej. `Cuentas\2026`), la app avisa y no la usa.
+- Carpeta raíz recordada entre visitas (puede pedir "Reconectar" con un clic al volver).
 - Crear periodos (año) → genera los 12 meses automáticamente.
 - Dashboard por mes con tarjetas de servicio.
 - **Estado automático**: un servicio con ≥1 comprobante = _pagado_; sin comprobantes = _pendiente_.

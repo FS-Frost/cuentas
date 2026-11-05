@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { app } from "../store.svelte";
+  import { app, GITHUB_URL } from "../store.svelte";
   import Icon from "./Icon.svelte";
 
   let {
@@ -111,7 +111,16 @@
 
   <button
     class="rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-500 hover:bg-slate-50"
-    onclick={() => app.pickRoot()}
+    onclick={() => app.pickRoot("existing")}
     title={app.rootName ? `Carpeta actual: ${app.rootName}` : ""}
   >Cambiar carpeta</button>
+
+  <a
+    class="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+    href={GITHUB_URL}
+    target="_blank"
+    rel="noopener noreferrer"
+    title="Ver en GitHub"
+    aria-label="Ver en GitHub"
+  ><Icon name="github" class="h-4 w-4" /></a>
 </header>

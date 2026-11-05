@@ -30,6 +30,8 @@ export default tseslint.config(
     rules: {
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+      // App de una sola ruta: los únicos <a href> son enlaces externos (GitHub).
+      "svelte/no-navigation-without-resolve": ["error", { ignoreLinks: true }],
     },
   },
 );

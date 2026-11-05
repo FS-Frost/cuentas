@@ -45,7 +45,8 @@ async function loadHandle(): Promise<FileSystemDirectoryHandle | null> {
   }
 }
 
-async function saveHandle(handle: FileSystemDirectoryHandle): Promise<void> {
+/** Guarda la carpeta como raíz (solo después de validarla). */
+export async function saveRoot(handle: FileSystemDirectoryHandle): Promise<void> {
   await idb("readwrite", (s) => s.put(handle, KEY));
 }
 
@@ -58,12 +59,13 @@ export async function loadRoot(): Promise<RootState> {
   return perm === "granted" ? { status: "ready", handle } : { status: "needs-permission", handle };
 }
 
-/** Abre el selector de carpeta (requiere gesto del usuario). null si cancela. */
-export async function pickRoot(): Promise<FileSystemDirectoryHandle | null> {
+/**
+ * Abre el selector de carpeta (requiere gesto del usuario). null si cancela.
+ * No la guarda: el llamador la valida y luego llama a saveRoot.
+ */
+export async function chooseFolder(): Promise<FileSystemDirectoryHandle | null> {
   try {
-    const handle = await window.showDirectoryPicker!({ id: "cuentas-root", mode: "readwrite" });
-    await saveHandle(handle);
-    return handle;
+    return await window.showDirectoryPicker!({ id: "cuentas-root", mode: "readwrite" });
   } catch (e) {
     if (e instanceof DOMException && e.name === "AbortError") return null;
     throw e;

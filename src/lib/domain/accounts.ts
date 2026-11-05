@@ -89,6 +89,30 @@ export async function listPeriods(fs: Fs): Promise<string[]> {
     .sort((a, b) => b.localeCompare(a)); // años descendente
 }
 
+export interface RootInspection {
+  /** Periodos (carpetas de 4 dígitos) presentes en la raíz. */
+  periods: string[];
+  /**
+   * La carpeta parece ser un año y no la raíz (se llama "2026" o contiene
+   * carpetas de mes como "01. Enero"), y no tiene periodos propios.
+   */
+  looksLikeYear: boolean;
+  /** Entradas que no son periodos ni archivos ocultos/de sistema. */
+  otherEntries: number;
+}
+
+/** Revisa una carpeta candidata a raíz antes de usarla. */
+export async function inspectRoot(fs: Fs, rootName: string): Promise<RootInspection> {
+  const entries = await listOrEmpty(fs, []);
+  const periods = await listPeriods(fs);
+  const hasMonthDirs = entries.some((e) => e.kind === "directory" && parseMonth(e.name) !== null);
+  const looksLikeYear = periods.length === 0 && (isValidYear(rootName) || hasMonthDirs);
+  const otherEntries = entries.filter(
+    (e) => !(e.kind === "directory" && periods.includes(e.name)) && isCountableFile(e.name),
+  ).length;
+  return { periods, looksLikeYear, otherEntries };
+}
+
 export async function listMonths(_fs: Fs, _period: string): Promise<MonthInfo[]> {
   // Siempre devolvemos los 12 meses; el frontend indica cuáles existen por su contenido.
   return allMonthFolders().map((folder) => {

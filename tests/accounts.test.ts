@@ -310,6 +310,49 @@ describe("renombrar con fallback (sin move nativo)", () => {
   });
 });
 
+describe("inspectRoot", () => {
+  test("raíz válida con periodos; ocultos y archivos de sistema no cuentan", async () => {
+    await accounts.createPeriod(fsx, "2026");
+    await fs.writeFile(path.join(root, ".cuentas.json"), "{}");
+    await fs.writeFile(path.join(root, "desktop.ini"), "");
+    expect(await accounts.inspectRoot(fsx, "Cuentas")).toEqual({
+      periods: ["2026"],
+      looksLikeYear: false,
+      otherEntries: 0,
+    });
+  });
+
+  test("carpeta vacía", async () => {
+    expect(await accounts.inspectRoot(fsx, "Cuentas")).toEqual({
+      periods: [],
+      looksLikeYear: false,
+      otherEntries: 0,
+    });
+  });
+
+  test("carpeta de año: por contener meses o por su nombre", async () => {
+    await fs.mkdir(path.join(root, "01. Enero"));
+    const byMonths = await accounts.inspectRoot(fsx, "Cuentas");
+    expect(byMonths.looksLikeYear).toBe(true);
+
+    await fs.rm(path.join(root, "01. Enero"), { recursive: true });
+    expect((await accounts.inspectRoot(fsx, "2026")).looksLikeYear).toBe(true);
+  });
+
+  test("raíz llamada como año pero con periodos no se rechaza", async () => {
+    await accounts.createPeriod(fsx, "2025");
+    expect((await accounts.inspectRoot(fsx, "2026")).looksLikeYear).toBe(false);
+  });
+
+  test("carpeta con otras cosas cuenta las entradas ajenas", async () => {
+    await fs.mkdir(path.join(root, "Fotos"));
+    await fs.writeFile(path.join(root, "notas.txt"), "x");
+    const res = await accounts.inspectRoot(fsx, "Documentos");
+    expect(res.otherEntries).toBe(2);
+    expect(res.looksLikeYear).toBe(false);
+  });
+});
+
 describe("eliminar", () => {
   test("deleteEntry borra un servicio con su contenido", async () => {
     await accounts.createPeriod(fsx, "2026");
