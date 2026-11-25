@@ -207,14 +207,15 @@ class AppStore {
     );
   }
 
-  /** Volver a pedir permiso sobre la carpeta guardada. Llamar desde un click. */
+  /**
+   * Recuperar el acceso a la carpeta guardada. Llamar desde un click.
+   * No usa requestPermission: en la PWA instalada de Edge puede no responder
+   * nunca (igual que queryPermission). Abre el selector, que el navegador
+   * posiciona en la última carpeta elegida (id "cuentas-root"), y la nueva
+   * elección reemplaza al handle guardado.
+   */
   async reconnect(): Promise<void> {
-    if (!this.pendingHandle) return this.pickRoot();
-    if (await rootStore.reconnect(this.pendingHandle)) {
-      await this.useRoot(this.pendingHandle);
-    } else {
-      pushToast("Permiso denegado. Puedes elegir la carpeta de nuevo.", "error");
-    }
+    await this.pickRoot("existing");
   }
 
   /** Relee todo desde disco (periodos, recurrentes, mes actual y paneles abiertos). */

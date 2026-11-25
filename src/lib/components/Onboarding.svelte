@@ -23,20 +23,21 @@
       <h1 class="text-2xl font-semibold text-slate-800">Reconectar carpeta</h1>
       <p class="mt-2 max-w-md text-slate-500">
         El navegador necesita que confirmes de nuevo el acceso a
-        <code class="rounded bg-slate-100 px-1">{app.rootName}</code>.
+        <code class="rounded bg-slate-100 px-1">{app.rootName}</code>. Se abrirá el selector
+        de carpetas: elige «{app.rootName}» (o la carpeta que quieras usar) y confirma.
       </p>
     </div>
-    <div class="flex flex-col items-center gap-2">
-      <button
-        class="rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white shadow hover:bg-blue-700"
-        onclick={() => app.reconnect()}
-      >
-        Reconectar «{app.rootName}»
-      </button>
-      <button class="text-sm text-slate-500 hover:text-blue-600" onclick={() => app.pickRoot("existing")}>
-        Elegir otra carpeta
-      </button>
-    </div>
+    <button
+      class="rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white shadow hover:bg-blue-700"
+      onclick={() => app.reconnect()}
+    >
+      Reconectar «{app.rootName}»
+    </button>
+    {#if app.rootWarning}
+      <p class="max-w-xl rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800" role="alert">
+        {app.rootWarning}
+      </p>
+    {/if}
   {:else}
     <div>
       <h1 class="text-2xl font-semibold text-slate-800">Bienvenido a Cuentas</h1>

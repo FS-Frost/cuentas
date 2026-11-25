@@ -91,8 +91,3 @@ export async function chooseFolder(): Promise<FileSystemDirectoryHandle | null> 
     throw e;
   }
 }
-
-/** Pide de nuevo el permiso sobre la carpeta guardada (requiere gesto del usuario). */
-export async function reconnect(handle: FileSystemDirectoryHandle): Promise<boolean> {
-  return (await handle.requestPermission({ mode: "readwrite" })) === "granted";
-}
