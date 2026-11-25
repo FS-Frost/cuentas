@@ -57,6 +57,8 @@ Para agregar una operación: lógica en `domain/accounts.ts` (con test en `tests
 - No existe "abrir con el sistema" ni "mostrar en carpeta".
 - `move()` no está disponible para directorios en Chromium (verificado en Edge): renombrar periodo/mes/servicio usa el fallback copiar + borrar. Si se interrumpe, puede quedar una copia parcial con el nombre nuevo (la original queda intacta).
 - El navegador no expone rutas absolutas; solo el nombre de la carpeta raíz.
+- `queryPermission` puede no resolver nunca (visto en la PWA instalada de Edge con una carpeta real guardada; la consola queda vacía). `root.loadRoot` lo corta a los 1 s (`QUERY_PERMISSION_TIMEOUT_MS`) y lo trata como `needs-permission` (pantalla Reconectar). Toda llamada a la API del navegador en el arranque debe tener un límite así; nunca dejar `app.loading` esperando una promesa sin cota.
+- La pantalla de carga (`+page.svelte`) muestra `app.loadingStep`: `loadRoot(onStep)` y `loadAll(showProgress)` lo actualizan, incluido el avance por mes vía `listPending(..., onMonth)`. `useRoot` activa `loading` también al reconectar o elegir carpeta; los refrescos por foco/Recargar no lo activan.
 
 ### Tests
 

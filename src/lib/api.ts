@@ -112,8 +112,8 @@ export const api = {
   },
 
   // ---- Vistas transversales ----
-  listPending: async ({ period }: { period: string }) => ({
-    items: await accounts.listPending(fs(), period),
+  listPending: async ({ period, onMonth }: { period: string; onMonth?: (n: number) => void }) => ({
+    items: await accounts.listPending(fs(), period, onMonth),
   }),
   search: async ({
     period,

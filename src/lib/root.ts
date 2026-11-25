@@ -52,17 +52,19 @@ export async function saveRoot(handle: FileSystemDirectoryHandle): Promise<void>
 
 // queryPermission puede no resolver nunca (visto en la PWA instalada de Edge con
 // una carpeta real guardada). Pasado este tiempo se trata como "pedir permiso".
-const QUERY_PERMISSION_TIMEOUT_MS = 3000;
+const QUERY_PERMISSION_TIMEOUT_MS = 1000;
 
 function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
   return Promise.race([p, new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms))]);
 }
 
 /** Estado inicial: ¿hay carpeta guardada y tenemos permiso sin pedirlo? */
-export async function loadRoot(): Promise<RootState> {
+export async function loadRoot(onStep?: (step: string) => void): Promise<RootState> {
   if (!isSupported()) return { status: "unsupported" };
+  onStep?.("Buscando carpeta guardada…");
   const handle = await loadHandle();
   if (!handle) return { status: "none" };
+  onStep?.("Verificando permiso…");
   let perm: PermissionState | "timeout";
   try {
     perm = await withTimeout(

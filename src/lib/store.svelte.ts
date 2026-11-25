@@ -57,6 +57,8 @@ function isPastOrCurrentMonth(period: string, monthNN: string): boolean {
 
 class AppStore {
   loading = $state(true);
+  /** Paso actual que muestra la pantalla de carga (ver +page.svelte). */
+  loadingStep = $state("Iniciando…");
   rootStatus = $state<RootStatus>("none");
   /** Nombre de la carpeta raíz (el navegador no expone la ruta completa). */
   rootName = $state<string | null>(null);
@@ -95,7 +97,7 @@ class AppStore {
   async init(): Promise<void> {
     this.loading = true;
     try {
-      const state = await rootStore.loadRoot();
+      const state = await rootStore.loadRoot((step) => (this.loadingStep = step));
       this.rootStatus = state.status;
       if (state.status === "needs-permission") {
         this.pendingHandle = state.handle;
@@ -125,7 +127,13 @@ class AppStore {
     this.rootName = handle.name;
     this.rootStatus = "ready";
     this.pendingHandle = null;
-    await this.loadAll();
+    // Pantalla de carga con pasos también al reconectar o elegir carpeta.
+    this.loading = true;
+    try {
+      await this.loadAll(true);
+    } finally {
+      this.loading = false;
+    }
   }
 
   /**
@@ -220,7 +228,8 @@ class AppStore {
     }
   }
 
-  private async loadAll(): Promise<void> {
+  private async loadAll(showProgress = false): Promise<void> {
+    if (showProgress) this.loadingStep = "Leyendo periodos…";
     const [{ periods }, { services: recurring }] = await Promise.all([
       api.listPeriods(),
       api.getRecurring(),
@@ -234,11 +243,11 @@ class AppStore {
       const { months } = await api.listMonths({ period: this.period });
       this.months = months;
     }
-    await this.refresh();
+    await this.refresh(showProgress);
   }
 
   /** Recarga los servicios y el resumen del mes actual. */
-  async refresh(): Promise<void> {
+  async refresh(showProgress = false): Promise<void> {
     if (!this.period) {
       this.services = [];
       this.summary = { total: 0, pagados: 0, pendientes: 0 };
@@ -248,7 +257,12 @@ class AppStore {
     const [{ services }, summary, { items }] = await Promise.all([
       api.listServices({ period: this.period, monthNN: this.monthNN }),
       api.getMonthSummary({ period: this.period, monthNN: this.monthNN }),
-      api.listPending({ period: this.period }),
+      api.listPending({
+        period: this.period,
+        onMonth: showProgress
+          ? (n) => (this.loadingStep = `Leyendo ${this.period} (mes ${n} de 12)…`)
+          : undefined,
+      }),
     ]);
     this.services = services;
     this.summary = summary;

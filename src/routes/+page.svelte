@@ -63,7 +63,10 @@
 </script>
 
 {#if app.loading}
-  <div class="flex h-full items-center justify-center text-slate-400">Cargando…</div>
+  <div class="flex h-full flex-col items-center justify-center gap-4 text-slate-400" role="status" aria-live="polite">
+    <div class="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"></div>
+    <p class="text-sm">{app.loadingStep}</p>
+  </div>
 {:else if app.rootStatus !== "ready"}
   <Onboarding />
 {:else}

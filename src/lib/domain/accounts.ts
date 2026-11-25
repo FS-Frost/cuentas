@@ -375,9 +375,15 @@ export async function copyPreviousMonth(
 // Vistas transversales (dentro de un periodo)
 // --------------------------------------------------------------------------
 
-export async function listPending(fs: Fs, period: string): Promise<PendingItem[]> {
+/** onMonth(n): se llama antes de leer cada mes (1..12), para mostrar avance. */
+export async function listPending(
+  fs: Fs,
+  period: string,
+  onMonth?: (n: number) => void,
+): Promise<PendingItem[]> {
   const items: PendingItem[] = [];
   for (const month of await listMonths(fs, period)) {
+    onMonth?.(parseInt(month.nn, 10));
     for (const svc of await listServices(fs, period, month.nn)) {
       if (!svc.paid) {
         items.push({
