@@ -22,15 +22,15 @@
   }
 </script>
 
-<header class="flex flex-wrap items-center gap-3 border-b border-slate-200 bg-white px-4 py-3">
-  <div class="flex items-center gap-2 text-lg font-semibold text-slate-800">
+<header class="flex flex-wrap items-center gap-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3">
+  <div class="flex items-center gap-2 text-lg font-semibold text-slate-800 dark:text-slate-100">
     <Icon name="file" class="h-5 w-5" /> Cuentas
   </div>
 
   <!-- Periodo -->
   <div class="flex items-center gap-1">
     <select
-      class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm"
+      class="rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1.5 text-sm"
       value={app.period}
       onchange={(e) => app.setPeriod((e.currentTarget as HTMLSelectElement).value)}
       disabled={app.periods.length === 0}
@@ -43,19 +43,19 @@
       {/if}
     </select>
     <button
-      class="rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
+      class="rounded-md border border-slate-300 dark:border-slate-600 px-2 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
       onclick={onNewPeriod}
       title="Nuevo periodo (año)"
     >+ Año</button>
     {#if app.period}
       <button
-        class="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+        class="rounded-md p-1.5 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200"
         onclick={onRenamePeriod}
         title="Renombrar año {app.period}"
         aria-label="Renombrar año {app.period}"
       ><Icon name="pencil" class="h-4 w-4" /></button>
       <button
-        class="rounded-md p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+        class="rounded-md p-1.5 text-slate-400 dark:text-slate-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400"
         onclick={onDeletePeriod}
         title="Eliminar año {app.period}"
         aria-label="Eliminar año {app.period}"
@@ -65,7 +65,7 @@
 
   <!-- Mes -->
   <select
-    class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm"
+    class="rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1.5 text-sm"
     value={app.monthNN}
     onchange={(e) => app.setMonth((e.currentTarget as HTMLSelectElement).value)}
     disabled={!app.period}
@@ -76,7 +76,7 @@
   </select>
 
   <button
-    class="rounded-md border border-slate-300 px-2 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
+    class="rounded-md border border-slate-300 dark:border-slate-600 px-2 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
     onclick={() => app.goToCurrentMonth()}
     title="Ir al mes actual"
   >Hoy</button>
@@ -84,7 +84,7 @@
   <!-- Búsqueda -->
   <form class="flex-1" onsubmit={submitSearch}>
     <input
-      class="w-full max-w-xs rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+      class="w-full max-w-xs rounded-md border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm"
       type="search"
       placeholder="Buscar servicio en {app.period || 'el periodo'}…"
       bind:value={query}
@@ -95,7 +95,7 @@
   <!-- Alerta de pendientes -->
   {#if app.pendingCount > 0}
     <button
-      class="flex items-center gap-1 rounded-full bg-red-100 px-3 py-1.5 text-sm font-semibold text-red-700 hover:bg-red-200"
+      class="flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/40 px-3 py-1.5 text-sm font-semibold text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60"
       onclick={() => (app.view = "pending")}
       title="Ver cuentas pendientes"
     >{app.pendingCount} pendiente{app.pendingCount === 1 ? "" : "s"}</button>
@@ -106,38 +106,38 @@
     <button
       class="rounded-md px-3 py-1.5 text-sm {app.view === 'dashboard'
         ? 'bg-blue-600 text-white'
-        : 'text-slate-600 hover:bg-slate-100'}"
+        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}"
       onclick={() => (app.view = "dashboard")}
     >Mes</button>
     <button
       class="rounded-md px-3 py-1.5 text-sm {app.view === 'pending'
         ? 'bg-blue-600 text-white'
-        : 'text-slate-600 hover:bg-slate-100'}"
+        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}"
       onclick={() => (app.view = "pending")}
     >Pendientes</button>
     <button
       class="rounded-md px-3 py-1.5 text-sm {app.view === 'recurring'
         ? 'bg-blue-600 text-white'
-        : 'text-slate-600 hover:bg-slate-100'}"
+        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}"
       onclick={() => (app.view = "recurring")}
     >Recurrentes</button>
   </nav>
 
   <button
-    class="rounded-md border border-slate-300 p-1.5 text-slate-500 hover:bg-slate-50"
+    class="rounded-md border border-slate-300 dark:border-slate-600 p-1.5 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
     onclick={() => app.reload()}
     title="Recargar desde disco"
     aria-label="Recargar desde disco"
   ><Icon name="refresh" class="h-4 w-4" /></button>
 
   <button
-    class="rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-500 hover:bg-slate-50"
+    class="rounded-md border border-slate-300 dark:border-slate-600 px-2 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
     onclick={() => app.pickRoot("existing")}
     title={app.rootName ? `Carpeta actual: ${app.rootName}` : ""}
   >Cambiar carpeta</button>
 
   <a
-    class="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+    class="rounded-md p-1.5 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200"
     href={GITHUB_URL}
     target="_blank"
     rel="noopener noreferrer"

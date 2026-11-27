@@ -38,10 +38,10 @@
 </script>
 
 <Modal {title} onClose={handleCancel}>
-  <p class="text-sm text-slate-600">{message}</p>
+  <p class="text-sm text-slate-600 dark:text-slate-300">{message}</p>
   {#snippet footer()}
     <button
-      class="rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100 disabled:opacity-50"
+      class="rounded-md px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50"
       onclick={handleCancel}
       disabled={submitting}
     >{cancelLabel}</button>

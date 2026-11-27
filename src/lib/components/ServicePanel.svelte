@@ -177,41 +177,41 @@
 
 <!-- Drawer lateral derecho -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
-<div class="fixed inset-0 z-30 flex justify-end bg-slate-900/30" onclick={onClose} role="presentation">
+<div class="fixed inset-0 z-30 flex justify-end bg-slate-900/30 dark:bg-black/60" onclick={onClose} role="presentation">
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <div
-    class="flex h-full w-full max-w-md flex-col bg-white shadow-2xl"
+    class="flex h-full w-full max-w-md flex-col bg-white dark:bg-slate-900 shadow-2xl"
     onclick={(e) => e.stopPropagation()}
     role="dialog"
     aria-modal="true"
     tabindex="-1"
   >
     <!-- Cabecera -->
-    <div class="flex items-start justify-between border-b border-slate-100 p-4">
+    <div class="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 p-4">
       <div class="min-w-0">
         {#if service.categoria}
-          <span class="text-xs font-medium text-slate-400">{service.categoria}</span>
+          <span class="text-xs font-medium text-slate-400 dark:text-slate-500">{service.categoria}</span>
         {/if}
-        <h2 class="truncate text-lg font-semibold text-slate-800">{service.nombre}</h2>
+        <h2 class="truncate text-lg font-semibold text-slate-800 dark:text-slate-100">{service.nombre}</h2>
         <span
           class="mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold {service.paid
-            ? 'bg-emerald-100 text-emerald-700'
-            : 'bg-amber-100 text-amber-700'}"
+            ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300'
+            : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'}"
         >{service.paid ? "Pagado" : "Pendiente"}</span>
       </div>
-      <button class="rounded p-1 text-slate-400 hover:bg-slate-100" onclick={onClose} aria-label="Cerrar"
+      <button class="rounded p-1 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800" onclick={onClose} aria-label="Cerrar"
         ><Icon name="close" class="h-4 w-4" /></button
       >
     </div>
 
     <!-- Acciones de servicio -->
-    <div class="flex flex-wrap gap-2 border-b border-slate-100 px-4 py-2 text-sm">
+    <div class="flex flex-wrap gap-2 border-b border-slate-100 dark:border-slate-800 px-4 py-2 text-sm">
       <button
-        class="text-slate-500 hover:text-blue-600"
+        class="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400"
         onclick={() => openRename(serviceTarget(), "servicio", service.folder)}>Renombrar</button
       >
       <button
-        class="text-slate-500 hover:text-rose-600"
+        class="text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400"
         onclick={() => (confirmTarget = { target: serviceTarget(), label: `el servicio "${service.nombre}"` })}
         >Eliminar</button
       >
@@ -221,8 +221,8 @@
     <div class="flex-1 overflow-y-auto p-4">
       <div
         class="mb-3 rounded-lg border-2 border-dashed p-4 text-center text-sm transition {dragOver
-          ? 'border-blue-400 bg-blue-50 text-blue-600'
-          : 'border-slate-300 text-slate-400'}"
+          ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400'
+          : 'border-slate-300 dark:border-slate-600 text-slate-400 dark:text-slate-500'}"
         ondragover={(e) => {
           e.preventDefault();
           dragOver = true;
@@ -244,20 +244,20 @@
       </div>
 
       {#if files.length === 0}
-        <p class="py-6 text-center text-sm text-slate-400">Sin comprobantes todavía.</p>
+        <p class="py-6 text-center text-sm text-slate-400 dark:text-slate-500">Sin comprobantes todavía.</p>
       {:else}
         <ul class="flex flex-col gap-1.5">
           {#each files as file (file.name)}
-            <li class="flex items-center gap-2 rounded-lg border border-slate-100 p-2 hover:bg-slate-50">
-              <Icon name={iconFor[file.ext] ?? "paperclip"} class="h-5 w-5 shrink-0 text-slate-400" />
+            <li class="flex items-center gap-2 rounded-lg border border-slate-100 dark:border-slate-800 p-2 hover:bg-slate-50 dark:hover:bg-slate-800">
+              <Icon name={iconFor[file.ext] ?? "paperclip"} class="h-5 w-5 shrink-0 text-slate-400 dark:text-slate-500" />
               <div class="min-w-0 flex-1">
-                <div class="truncate text-sm text-slate-700" title={file.name}>{file.name}</div>
-                <div class="text-xs text-slate-400">{fmtSize(file.sizeBytes)}</div>
+                <div class="truncate text-sm text-slate-700 dark:text-slate-200" title={file.name}>{file.name}</div>
+                <div class="text-xs text-slate-400 dark:text-slate-500">{fmtSize(file.sizeBytes)}</div>
               </div>
               <div class="flex shrink-0 items-center gap-1 text-xs">
-                <button class="rounded px-1.5 py-1 text-slate-500 hover:bg-slate-200" onclick={() => openFile(file)} title={file.previewable ? "Abrir en pestaña nueva" : "Descargar"}><Icon name={file.previewable ? "external-link" : "download"} class="h-4 w-4" /></button>
-                <button class="rounded px-1.5 py-1 text-slate-500 hover:bg-slate-200" onclick={() => openRename(fileTarget(file.name), "archivo", file.name)} title="Renombrar"><Icon name="pencil" class="h-4 w-4" /></button>
-                <button class="rounded px-1.5 py-1 text-slate-500 hover:bg-rose-100 hover:text-rose-600" onclick={() => (confirmTarget = { target: fileTarget(file.name), label: `"${file.name}"` })} title="Eliminar"><Icon name="trash" class="h-4 w-4" /></button>
+                <button class="rounded px-1.5 py-1 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700" onclick={() => openFile(file)} title={file.previewable ? "Abrir en pestaña nueva" : "Descargar"}><Icon name={file.previewable ? "external-link" : "download"} class="h-4 w-4" /></button>
+                <button class="rounded px-1.5 py-1 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700" onclick={() => openRename(fileTarget(file.name), "archivo", file.name)} title="Renombrar"><Icon name="pencil" class="h-4 w-4" /></button>
+                <button class="rounded px-1.5 py-1 text-slate-500 dark:text-slate-400 hover:bg-rose-100 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400" onclick={() => (confirmTarget = { target: fileTarget(file.name), label: `"${file.name}"` })} title="Eliminar"><Icon name="trash" class="h-4 w-4" /></button>
               </div>
             </li>
           {/each}
@@ -266,17 +266,17 @@
     </div>
 
     <!-- Notas -->
-    <div class="border-t border-slate-100 p-4">
-      <label class="mb-1 block text-xs font-medium text-slate-500" for="notes">Notas</label>
+    <div class="border-t border-slate-100 dark:border-slate-800 p-4">
+      <label class="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400" for="notes">Notas</label>
       <textarea
         id="notes"
-        class="h-20 w-full resize-none rounded-md border border-slate-300 p-2 text-sm"
+        class="h-20 w-full resize-none rounded-md border border-slate-300 dark:border-slate-600 p-2 text-sm"
         placeholder="N° de cliente, observaciones…"
         bind:value={notes}
         oninput={() => (notesDirty = true)}
       ></textarea>
       {#if notesDirty}
-        <button class="mt-2 rounded-md bg-slate-800 px-3 py-1.5 text-sm text-white hover:bg-slate-700" onclick={saveNotes}
+        <button class="mt-2 rounded-md bg-slate-800 dark:bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-700 dark:hover:bg-slate-600" onclick={saveNotes}
           >Guardar nota</button
         >
       {/if}
@@ -288,12 +288,12 @@
 {#if renameTarget}
   <Modal title={`Renombrar ${renameTarget.label}`} onClose={() => (renameTarget = null)}>
     <input
-      class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+      class="w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
       bind:value={renameValue}
       onkeydown={(e) => e.key === "Enter" && requestRenameConfirm()}
     />
     {#snippet footer()}
-      <button class="rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100" onclick={() => (renameTarget = null)}>Cancelar</button>
+      <button class="rounded-md px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800" onclick={() => (renameTarget = null)}>Cancelar</button>
       <button class="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700" onclick={requestRenameConfirm}>Guardar</button>
     {/snippet}
   </Modal>

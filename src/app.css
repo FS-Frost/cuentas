@@ -26,3 +26,20 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
+
+/* Modo oscuro: sigue al sistema (prefers-color-scheme). Las variantes dark:
+   de los componentes usan el mismo criterio (default de Tailwind v4). */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark; /* controles nativos (inputs, selects, scroll) oscuros */
+  }
+
+  body {
+    background-color: #020617; /* slate-950 */
+    color: #f1f5f9; /* slate-100 */
+  }
+
+  * {
+    scrollbar-color: #475569 transparent; /* slate-600 */
+  }
+}

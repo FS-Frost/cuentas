@@ -23,7 +23,7 @@
 
 {#if available}
   <div
-    class="fixed inset-x-0 bottom-4 z-50 mx-auto flex w-fit max-w-[calc(100%-2rem)] items-center gap-3 rounded-full bg-slate-800 px-4 py-2 text-sm text-white shadow-lg dark:bg-slate-200 dark:text-slate-900"
+    class="fixed inset-x-0 bottom-4 z-50 mx-auto flex w-fit max-w-[calc(100%-2rem)] items-center gap-3 rounded-full bg-slate-800 dark:bg-slate-700 px-4 py-2 text-sm text-white shadow-lg"
     role="status"
   >
     Hay una versión nueva de Cuentas.
@@ -32,7 +32,7 @@
       onclick={() => location.reload()}
     >Recargar</button>
     <button
-      class="text-slate-300 hover:text-white dark:text-slate-600 dark:hover:text-slate-900"
+      class="text-slate-300 hover:text-white"
       onclick={() => (available = false)}
       aria-label="Descartar aviso"
     >✕</button>

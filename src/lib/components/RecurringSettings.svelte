@@ -27,8 +27,8 @@
 </script>
 
 <div class="mx-auto max-w-2xl p-5">
-  <h2 class="mb-1 text-xl font-semibold text-slate-800">Servicios recurrentes</h2>
-  <p class="mb-4 text-sm text-slate-500">
+  <h2 class="mb-1 text-xl font-semibold text-slate-800 dark:text-slate-100">Servicios recurrentes</h2>
+  <p class="mb-4 text-sm text-slate-500 dark:text-slate-400">
     Tus cuentas habituales. Con el botón “Aplicar plantilla” de cada mes se crean
     las carpetas de estos servicios que falten.
   </p>
@@ -37,18 +37,18 @@
     {#each rows as row, i (i)}
       <div class="flex items-center gap-2">
         <input
-          class="w-40 rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+          class="w-40 rounded-md border border-slate-300 dark:border-slate-600 px-2 py-1.5 text-sm"
           placeholder="Categoría (opcional)"
           value={row.categoria ?? ""}
           oninput={(e) => (rows[i].categoria = (e.currentTarget as HTMLInputElement).value)}
         />
         <input
-          class="flex-1 rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+          class="flex-1 rounded-md border border-slate-300 dark:border-slate-600 px-2 py-1.5 text-sm"
           placeholder="Nombre del servicio"
           bind:value={rows[i].nombre}
         />
         <button
-          class="rounded-md px-2 py-1.5 text-slate-400 hover:bg-rose-100 hover:text-rose-600"
+          class="rounded-md px-2 py-1.5 text-slate-400 dark:text-slate-500 hover:bg-rose-100 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400"
           onclick={() => removeRow(i)}
           aria-label="Quitar"
         ><Icon name="trash" class="h-4 w-4" /></button>
@@ -58,7 +58,7 @@
 
   <div class="mt-4 flex gap-2">
     <button
-      class="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
+      class="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
       onclick={addRow}
     >+ Agregar fila</button>
     <button
@@ -68,7 +68,7 @@
   </div>
 
   {#if rows.length === 0}
-    <p class="mt-4 text-sm text-slate-400">
+    <p class="mt-4 text-sm text-slate-400 dark:text-slate-500">
       Aún no defines servicios recurrentes. Agrega tus cuentas habituales (luz, agua, gas…).
     </p>
   {/if}

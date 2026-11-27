@@ -2,7 +2,7 @@
   import { toasts, dismissToast } from "../toast.svelte";
 
   const styles: Record<string, string> = {
-    info: "bg-slate-800 text-white",
+    info: "bg-slate-800 dark:bg-slate-700 text-white",
     success: "bg-emerald-600 text-white",
     error: "bg-rose-600 text-white",
   };

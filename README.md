@@ -41,7 +41,8 @@ API: **tus archivos nunca salen de tu equipo** (el sitio es estático, sin backe
 - Panel de pendientes y búsqueda/filtros (dentro del periodo).
 - Refresco al volver a la ventana y botón Recargar (para cambios hechos desde el
   Explorador o la nube).
-- Instalable y usable sin conexión.
+- Instalable y usable sin conexión; avisa cuando hay una versión nueva ("Recargar").
+- Modo oscuro automático (sigue el tema de Windows).
 
 ### Diferencias con la antigua app de escritorio
 

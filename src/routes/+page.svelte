@@ -95,8 +95,8 @@
 </script>
 
 {#if app.loading}
-  <div class="flex h-full flex-col items-center justify-center gap-4 text-slate-400" role="status" aria-live="polite">
-    <div class="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"></div>
+  <div class="flex h-full flex-col items-center justify-center gap-4 text-slate-400 dark:text-slate-500" role="status" aria-live="polite">
+    <div class="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 dark:border-slate-700 border-t-blue-600"></div>
     <p class="text-sm">{app.loadingStep}</p>
   </div>
 {:else if app.rootStatus !== "ready"}
@@ -112,7 +112,7 @@
 
     <main class="flex-1 overflow-y-auto">
       {#if app.periods.length === 0}
-        <div class="flex flex-col items-center gap-3 p-16 text-center text-slate-400">
+        <div class="flex flex-col items-center gap-3 p-16 text-center text-slate-400 dark:text-slate-500">
           <Icon name="calendar" class="h-8 w-8" />
           <p>No hay periodos todavía.</p>
           <button
@@ -140,16 +140,16 @@
 <!-- Modal: nuevo periodo -->
 {#if showNewPeriod}
   <Modal title="Nuevo periodo" onClose={() => (showNewPeriod = false)}>
-    <label class="mb-1 block text-sm text-slate-500" for="year">Año (4 dígitos)</label>
+    <label class="mb-1 block text-sm text-slate-500 dark:text-slate-400" for="year">Año (4 dígitos)</label>
     <input
       id="year"
-      class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+      class="w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
       bind:value={newYear}
       onkeydown={(e) => e.key === "Enter" && submitNewPeriod()}
     />
-    <p class="mt-2 text-xs text-slate-400">Se crearán automáticamente los 12 meses.</p>
+    <p class="mt-2 text-xs text-slate-400 dark:text-slate-500">Se crearán automáticamente los 12 meses.</p>
     {#snippet footer()}
-      <button class="rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100" onclick={() => (showNewPeriod = false)}>Cancelar</button>
+      <button class="rounded-md px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800" onclick={() => (showNewPeriod = false)}>Cancelar</button>
       <button class="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700" onclick={submitNewPeriod}>Crear</button>
     {/snippet}
   </Modal>
@@ -159,19 +159,19 @@
 {#if showRenamePeriod}
   {@const valid = /^\d{4}$/.test(renameYear.trim()) && renameYear.trim() !== app.period}
   <Modal title={`Renombrar año ${app.period}`} onClose={() => (showRenamePeriod = false)}>
-    <label class="mb-1 block text-sm text-slate-500" for="rename-year">Nuevo año (4 dígitos)</label>
+    <label class="mb-1 block text-sm text-slate-500 dark:text-slate-400" for="rename-year">Nuevo año (4 dígitos)</label>
     <input
       id="rename-year"
-      class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+      class="w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
       bind:value={renameYear}
       onkeydown={(e) => e.key === "Enter" && valid && submitRenamePeriod()}
     />
-    <p class="mt-2 text-xs text-slate-400">
+    <p class="mt-2 text-xs text-slate-400 dark:text-slate-500">
       Se copian todas sus carpetas y comprobantes al nombre nuevo y luego se borra el original;
       con muchos archivos puede tardar. Las notas se conservan.
     </p>
     {#snippet footer()}
-      <button class="rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100" onclick={() => (showRenamePeriod = false)}>Cancelar</button>
+      <button class="rounded-md px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800" onclick={() => (showRenamePeriod = false)}>Cancelar</button>
       <button class="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50" onclick={submitRenamePeriod} disabled={!valid}>Renombrar</button>
     {/snippet}
   </Modal>
@@ -181,22 +181,22 @@
 {#if showDeletePeriod}
   {@const matches = deleteTyped.trim() === app.period}
   <Modal title={`Eliminar año ${app.period}`} onClose={() => (showDeletePeriod = false)}>
-    <p class="text-sm text-slate-600">
+    <p class="text-sm text-slate-600 dark:text-slate-300">
       Se borran del disco <strong>todos los meses, servicios y comprobantes</strong> de
       {app.period}, de forma definitiva (no pasa por la papelera) y no se puede deshacer.
     </p>
-    <label class="mb-1 mt-3 block text-sm text-slate-500" for="delete-year">
+    <label class="mb-1 mt-3 block text-sm text-slate-500 dark:text-slate-400" for="delete-year">
       Escribe <strong>{app.period}</strong> para confirmar
     </label>
     <input
       id="delete-year"
-      class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+      class="w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
       bind:value={deleteTyped}
       autocomplete="off"
       onkeydown={(e) => e.key === "Enter" && matches && submitDeletePeriod()}
     />
     {#snippet footer()}
-      <button class="rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100" onclick={() => (showDeletePeriod = false)}>Cancelar</button>
+      <button class="rounded-md px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800" onclick={() => (showDeletePeriod = false)}>Cancelar</button>
       <button class="rounded-md bg-rose-600 px-3 py-1.5 text-sm text-white hover:bg-rose-700 disabled:opacity-50" onclick={submitDeletePeriod} disabled={!matches}>Eliminar {app.period}</button>
     {/snippet}
   </Modal>
@@ -205,10 +205,10 @@
 <!-- Modal: nuevo servicio -->
 {#if showNewService}
   <Modal title={`Nuevo servicio · ${app.monthName} ${app.period}`} onClose={() => (showNewService = false)}>
-    <label class="mb-1 block text-sm text-slate-500" for="cat">Categoría (opcional)</label>
+    <label class="mb-1 block text-sm text-slate-500 dark:text-slate-400" for="cat">Categoría (opcional)</label>
     <input
       id="cat"
-      class="mb-3 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+      class="mb-3 w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
       list="cat-list"
       placeholder="ej. Depto, Casa"
       bind:value={svcCategoria}
@@ -218,16 +218,16 @@
         <option value={c}></option>
       {/each}
     </datalist>
-    <label class="mb-1 block text-sm text-slate-500" for="nom">Nombre</label>
+    <label class="mb-1 block text-sm text-slate-500 dark:text-slate-400" for="nom">Nombre</label>
     <input
       id="nom"
-      class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+      class="w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm"
       placeholder="ej. Aguas Andinas"
       bind:value={svcNombre}
       onkeydown={(e) => e.key === "Enter" && submitNewService()}
     />
     {#snippet footer()}
-      <button class="rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100" onclick={() => (showNewService = false)}>Cancelar</button>
+      <button class="rounded-md px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800" onclick={() => (showNewService = false)}>Cancelar</button>
       <button class="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700" onclick={submitNewService}>Crear</button>
     {/snippet}
   </Modal>

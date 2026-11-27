@@ -33,11 +33,11 @@
   <!-- Encabezado del mes -->
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div>
-      <h2 class="text-xl font-semibold text-slate-800">
+      <h2 class="text-xl font-semibold text-slate-800 dark:text-slate-100">
         {app.monthName}
-        <span class="text-slate-400">{app.period}</span>
+        <span class="text-slate-400 dark:text-slate-500">{app.period}</span>
       </h2>
-      <p class="text-sm text-slate-500">
+      <p class="text-sm text-slate-500 dark:text-slate-400">
         {app.summary.pagados} pagados · {app.summary.pendientes} pendientes ·
         {app.summary.total} servicios
       </p>
@@ -48,12 +48,12 @@
         onclick={onNewService}
       >+ Servicio</button>
       <button
-        class="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
+        class="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
         onclick={onApplyTemplateClick}
         title="Crea las carpetas de tus servicios recurrentes que falten"
       >Aplicar plantilla</button>
       <button
-        class="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
+        class="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
         onclick={() => (pendingAction = "copyPreviousMonth")}
         title="Copia las carpetas de servicio del mes anterior"
       >Copiar mes anterior</button>
@@ -63,7 +63,7 @@
   <!-- Grilla de servicios -->
   {#if app.services.length === 0}
     <div
-      class="flex flex-col items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-white/50 p-10 text-center text-slate-400"
+      class="flex flex-col items-center gap-3 rounded-xl border border-dashed border-slate-300 dark:border-slate-600 bg-white/50 p-10 text-center text-slate-400 dark:text-slate-500"
     >
       <Icon name="folder" class="h-8 w-8" />
       <p>No hay servicios en este mes.</p>
