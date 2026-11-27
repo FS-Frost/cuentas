@@ -9,6 +9,7 @@
   import RecurringSettings from "$lib/components/RecurringSettings.svelte";
   import ServicePanel from "$lib/components/ServicePanel.svelte";
   import Toasts from "$lib/components/Toasts.svelte";
+  import UpdateBanner from "$lib/components/UpdateBanner.svelte";
   import Modal from "$lib/components/Modal.svelte";
   import Icon from "$lib/components/Icon.svelte";
 
@@ -150,3 +151,4 @@
 {/if}
 
 <Toasts />
+<UpdateBanner />
