@@ -71,6 +71,8 @@ class AppStore {
   pendingTick = $state(0);
   /** Aviso a mostrar en el inicio tras elegir una carpeta inválida. */
   rootWarning = $state<string | null>(null);
+  /** Navegación ‹ › hacia un año que no existe: espera confirmación para crearlo. */
+  pendingYear = $state<{ year: string; monthNN: string } | null>(null);
   /** "Empezar desde cero" con una carpeta no vacía: espera confirmación. */
   pendingStart = $state<{ handle: FileSystemDirectoryHandle; otherEntries: number } | null>(null);
   private pendingHandle: FileSystemDirectoryHandle | null = null;
@@ -332,6 +334,34 @@ class AppStore {
     this.monthNN = nn;
     this.view = "dashboard";
     await this.refresh();
+  }
+
+  /**
+   * Mes anterior/siguiente (‹ ›), cruzando de año. Si el año destino no
+   * existe, deja pendingYear para que la UI ofrezca crearlo.
+   */
+  async stepMonth(delta: 1 | -1): Promise<void> {
+    if (!this.period) return;
+    let year = parseInt(this.period, 10);
+    let month = parseInt(this.monthNN, 10) + delta;
+    if (month < 1) { month = 12; year -= 1; }
+    if (month > 12) { month = 1; year += 1; }
+    const period = String(year);
+    const monthNN = pad2(month);
+    if (period !== this.period && !this.periods.includes(period)) {
+      this.pendingYear = { year: period, monthNN };
+      return;
+    }
+    if (period !== this.period) await this.setPeriod(period);
+    await this.setMonth(monthNN);
+  }
+
+  /** Confirmó crear el año al que se quería navegar. */
+  async confirmPendingYear(): Promise<void> {
+    const pending = this.pendingYear;
+    this.pendingYear = null;
+    if (!pending) return;
+    if (await this.createPeriod(pending.year)) await this.setMonth(pending.monthNN);
   }
 
   async createPeriod(year: string): Promise<boolean> {

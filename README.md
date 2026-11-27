@@ -30,7 +30,8 @@ API: **tus archivos nunca salen de tu equipo** (el sitio es estático, sin backe
 - Carpeta raíz recordada entre visitas (puede pedir "Reconectar" con un clic al volver).
 - Crear periodos (año) → genera los 12 meses automáticamente. Renombrar o eliminar un
   año desde la barra superior (eliminar pide escribir el año para confirmar).
-- Dashboard por mes con tarjetas de servicio.
+- Dashboard por mes con tarjetas de servicio. Navegación `‹ Noviembre 2026 ›` (cruza de
+  año y ofrece crear el año si no existe) y grilla de meses al hacer clic en el título.
 - **Estado automático**: un servicio con ≥1 comprobante = _pagado_; sin comprobantes = _pendiente_.
 - Categoría opcional por prefijo `[X]` en el nombre del servicio.
 - Importar comprobantes por **arrastrar y soltar** o botón (siempre copia el original).
@@ -42,7 +43,8 @@ API: **tus archivos nunca salen de tu equipo** (el sitio es estático, sin backe
 - Refresco al volver a la ventana y botón Recargar (para cambios hechos desde el
   Explorador o la nube).
 - Instalable y usable sin conexión; avisa cuando hay una versión nueva ("Recargar").
-- Modo oscuro automático (sigue el tema de Windows).
+- Tema Sistema / Claro / Oscuro en el menú `⋯` (por defecto sigue a Windows). El mismo
+  menú muestra la versión instalada.
 
 ### Diferencias con la antigua app de escritorio
 

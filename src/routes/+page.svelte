@@ -11,6 +11,7 @@
   import Toasts from "$lib/components/Toasts.svelte";
   import UpdateBanner from "$lib/components/UpdateBanner.svelte";
   import Modal from "$lib/components/Modal.svelte";
+  import ConfirmModal from "$lib/components/ConfirmModal.svelte";
   import Icon from "$lib/components/Icon.svelte";
 
   let selected = $state<ServiceInfo | null>(null);
@@ -231,6 +232,17 @@
       <button class="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700" onclick={submitNewService}>Crear</button>
     {/snippet}
   </Modal>
+{/if}
+
+<!-- Navegar con ‹ › hacia un año que no existe -->
+{#if app.pendingYear}
+  <ConfirmModal
+    title={`Crear ${app.pendingYear.year}`}
+    message={`El año ${app.pendingYear.year} no existe todavía. ¿Crearlo con sus 12 meses?`}
+    confirmLabel={`Crear ${app.pendingYear.year}`}
+    onConfirm={() => app.confirmPendingYear()}
+    onCancel={() => (app.pendingYear = null)}
+  />
 {/if}
 
 <Toasts />
