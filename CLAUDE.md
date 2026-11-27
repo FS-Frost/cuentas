@@ -46,7 +46,7 @@ Todo corre en el navegador; no hay backend. Capas:
 - **`src/lib/openFile.ts`** — abrir comprobantes: PDF/imagen en pestaña nueva (blob con MIME por extensión; la pestaña se abre antes del `await` para no perder el gesto del usuario), el resto se descarga.
 - **`src/lib/components/`** — un componente por vista/panel.
 - **`src/routes/`** — una sola ruta (`+page.svelte`), `prerender = true`, `ssr = false`.
-- **`src/service-worker.ts`** — cachea el build por `version` para abrir offline.
+- **`src/service-worker.ts`** — cachea el build por `version` para abrir offline. Solo `_app/immutable/*` (con hash) se sirve caché-primero; el HTML y el resto van **red-primero** (`no-cache`) con la caché como respaldo offline. Nunca servir el HTML caché-primero: queda pegado y la app no se actualiza. El precache del `install` usa `cache: "reload"` (GitHub Pages manda `max-age=600`).
 
 Para agregar una operación: lógica en `domain/accounts.ts` (con test en `tests/`), método en `lib/api.ts`, uso en el componente.
 

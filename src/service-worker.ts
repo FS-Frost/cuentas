@@ -3,24 +3,43 @@
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
 
-// Service worker (SvelteKit lo registra solo): cachea el build completo para
-// que la app abra sin conexión. Cada deploy tiene su `version`, así que la
-// caché vieja se descarta al activar el nuevo worker (la app nueva se toma al
-// recargar). Los datos del usuario nunca pasan por aquí: viven en su carpeta.
+// Service worker (SvelteKit lo registra solo): permite abrir la app sin
+// conexión. Los datos del usuario nunca pasan por aquí: viven en su carpeta.
+//
+// Estrategia:
+// - `_app/immutable/*` (nombre con hash, nunca cambia): caché primero.
+// - Todo lo demás (index.html, manifest, íconos, version.json): red primero,
+//   revalidando la caché HTTP (`no-cache`), con la caché del worker solo como
+//   respaldo offline. El HTML NUNCA se sirve primero desde caché: cambia en
+//   cada deploy y, si se queda pegado, la app no se actualiza nunca.
+// - Al instalar se descarga todo saltándose la caché HTTP (`reload`): GitHub
+//   Pages manda max-age=600 y sin esto el worker nuevo podía guardar el HTML
+//   del deploy anterior.
 
 import { build, files, prerendered, version } from "$service-worker";
 
 const sw = self as unknown as ServiceWorkerGlobalScope;
 
 const CACHE = `cuentas-${version}`;
-const ASSETS = new Set([...build, ...files, ...prerendered]);
+const PRECACHE = [...build, ...files, ...prerendered];
+
+function isImmutable(pathname: string): boolean {
+  return pathname.includes("/_app/immutable/");
+}
 
 sw.addEventListener("install", (event) => {
   event.waitUntil(
-    caches
-      .open(CACHE)
-      .then((cache) => cache.addAll([...ASSETS]))
-      .then(() => sw.skipWaiting()),
+    (async () => {
+      const cache = await caches.open(CACHE);
+      await Promise.all(
+        PRECACHE.map(async (path) => {
+          const res = await fetch(new Request(path, { cache: "reload" }));
+          if (!res.ok) throw new Error(`precache ${path}: ${res.status}`);
+          await cache.put(path, res);
+        }),
+      );
+      await sw.skipWaiting();
+    })(),
   );
 });
 
@@ -43,19 +62,23 @@ sw.addEventListener("fetch", (event) => {
     (async () => {
       const cache = await caches.open(CACHE);
 
-      // Archivos del build: siempre desde caché.
-      if (ASSETS.has(url.pathname)) {
+      if (isImmutable(url.pathname)) {
         const hit = await cache.match(url.pathname);
         if (hit) return hit;
       }
 
-      // Navegación u otros: red primero, caché como respaldo (offline).
       try {
-        const res = await fetch(req);
+        // Una Request de navegación no acepta RequestInit (TypeError): se arma una nueva.
+        const res = await fetch(
+          isImmutable(url.pathname) ? req : new Request(url.href, { cache: "no-cache" }),
+        );
         if (res.ok && res.type === "basic") cache.put(req, res.clone());
         return res;
       } catch (err) {
-        const hit = (await cache.match(req)) ?? (req.mode === "navigate" ? await cache.match(indexPath()) : undefined);
+        const hit =
+          (await cache.match(req)) ??
+          (await cache.match(url.pathname)) ??
+          (req.mode === "navigate" ? await cache.match(indexPath()) : undefined);
         if (hit) return hit;
         throw err;
       }
