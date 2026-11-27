@@ -46,8 +46,6 @@ export const api = {
   listFiles: async ({ period, monthNN, service }: Svc) => ({
     files: await accounts.listFiles(fs(), period, monthNN, service),
   }),
-  getMonthSummary: async ({ period, monthNN }: { period: string; monthNN: string }) =>
-    accounts.getMonthSummary(fs(), period, monthNN),
   readFile: async ({ period, monthNN, service, name }: Svc & { name: string }) =>
     accounts.readFile(fs(), period, monthNN, service, name),
 

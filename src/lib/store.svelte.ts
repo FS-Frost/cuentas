@@ -23,6 +23,9 @@ export const GITHUB_URL = "https://github.com/FS-Frost/cuentas";
 
 // Mínimo entre refrescos disparados por foco/visibilidad (evita dobles disparos).
 const FOCUS_REFRESH_MIN_MS = 1000;
+// Al volver el foco, los pendientes del año (12 meses) se recalculan como mucho
+// cada 5 min; el mes visible se relee siempre.
+const PENDING_REFRESH_MIN_MS = 5 * 60_000;
 
 export type ViewMode = "dashboard" | "pending" | "search" | "recurring";
 
@@ -64,12 +67,15 @@ class AppStore {
   rootName = $state<string | null>(null);
   /** Se incrementa en cada refresco externo (foco, botón Recargar) para que los paneles recarguen. */
   refreshTick = $state(0);
+  /** Se incrementa cuando se recalculan los pendientes del año por un refresco externo (PendingPanel). */
+  pendingTick = $state(0);
   /** Aviso a mostrar en el inicio tras elegir una carpeta inválida. */
   rootWarning = $state<string | null>(null);
   /** "Empezar desde cero" con una carpeta no vacía: espera confirmación. */
   pendingStart = $state<{ handle: FileSystemDirectoryHandle; otherEntries: number } | null>(null);
   private pendingHandle: FileSystemDirectoryHandle | null = null;
   private lastFocusRefresh = 0;
+  private lastPendingAt = 0;
 
   periods = $state<string[]>([]);
   period = $state<string>("");
@@ -116,7 +122,7 @@ class AppStore {
       const now = Date.now();
       if (now - this.lastFocusRefresh < FOCUS_REFRESH_MIN_MS) return;
       this.lastFocusRefresh = now;
-      void this.reload();
+      void this.refreshOnFocus();
     };
     window.addEventListener("focus", onFocus);
     document.addEventListener("visibilitychange", onFocus);
@@ -224,6 +230,7 @@ class AppStore {
     try {
       await this.loadAll();
       this.refreshTick += 1;
+      this.pendingTick += 1;
     } catch (e) {
       pushToast(e instanceof Error ? e.message : "No se pudo leer la carpeta.", "error");
     }
@@ -247,7 +254,7 @@ class AppStore {
     await this.refresh(showProgress);
   }
 
-  /** Recarga los servicios y el resumen del mes actual. */
+  /** Recarga el mes visible y los pendientes del año. */
   async refresh(showProgress = false): Promise<void> {
     if (!this.period) {
       this.services = [];
@@ -255,19 +262,49 @@ class AppStore {
       this.pendingCount = 0;
       return;
     }
-    const [{ services }, summary, { items }] = await Promise.all([
-      api.listServices({ period: this.period, monthNN: this.monthNN }),
-      api.getMonthSummary({ period: this.period, monthNN: this.monthNN }),
-      api.listPending({
-        period: this.period,
-        onMonth: showProgress
-          ? (n) => (this.loadingStep = `Leyendo ${this.period} (mes ${n} de 12)…`)
-          : undefined,
-      }),
-    ]);
+    await Promise.all([this.refreshMonth(), this.refreshPending(showProgress)]);
+  }
+
+  /** Solo el mes visible (una carpeta): servicios y resumen. */
+  private async refreshMonth(): Promise<void> {
+    const { services } = await api.listServices({ period: this.period, monthNN: this.monthNN });
     this.services = services;
-    this.summary = summary;
-    this.pendingCount = items.filter((it) => isPastOrCurrentMonth(this.period, it.monthNN)).length;
+    // El resumen se deriva de los servicios ya leídos (sin releer la carpeta).
+    const pagados = services.filter((s) => s.paid).length;
+    this.summary = { total: services.length, pagados, pendientes: services.length - pagados };
+  }
+
+  /** Pendientes del año (recorre los 12 meses): badge de la barra superior. */
+  private async refreshPending(showProgress = false): Promise<void> {
+    const period = this.period;
+    const { items } = await api.listPending({
+      period,
+      onMonth: showProgress
+        ? (n) => (this.loadingStep = `Leyendo ${period} (mes ${n} de 12)…`)
+        : undefined,
+    });
+    this.lastPendingAt = Date.now();
+    if (period !== this.period) return; // cambió de año mientras leía
+    this.pendingCount = items.filter((it) => isPastOrCurrentMonth(period, it.monthNN)).length;
+  }
+
+  /**
+   * Refresco al volver el foco (cambios hechos desde el Explorador o la nube).
+   * Liviano: relee solo el mes visible; los pendientes del año, solo si
+   * pasaron PENDING_REFRESH_MIN_MS. Recargar (reload) relee todo.
+   */
+  private async refreshOnFocus(): Promise<void> {
+    if (this.rootStatus !== "ready" || !this.period) return;
+    try {
+      await this.refreshMonth();
+      this.refreshTick += 1;
+      if (Date.now() - this.lastPendingAt >= PENDING_REFRESH_MIN_MS) {
+        await this.refreshPending();
+        this.pendingTick += 1;
+      }
+    } catch (e) {
+      pushToast(e instanceof Error ? e.message : "No se pudo leer la carpeta.", "error");
+    }
   }
 
   /** Cambia al mes/periodo actual (calendario), creando el cambio de vista necesario. */

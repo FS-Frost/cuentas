@@ -20,7 +20,7 @@
   $effect(() => {
     // Reacciona al periodo seleccionado y a refrescos externos (foco, Recargar).
     void app.period;
-    void app.refreshTick;
+    void app.pendingTick;
     void load();
   });
 
