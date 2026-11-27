@@ -15,7 +15,10 @@
   } = $props();
 
   function onKeydown(e: KeyboardEvent) {
-    if (e.key === "Escape") onClose();
+    if (e.key !== "Escape") return;
+    // Marca el evento: los paneles de abajo (ej. ServicePanel) no deben cerrarse también.
+    e.preventDefault();
+    onClose();
   }
 </script>
 

@@ -150,6 +150,13 @@
     await refreshEverything();
   }
 
+  // Escape cierra el panel, salvo que haya un modal abierto (ese se cierra primero).
+  function onKeydown(e: KeyboardEvent) {
+    if (e.key !== "Escape" || e.defaultPrevented) return;
+    if (renameTarget || pendingRename || confirmTarget) return;
+    onClose();
+  }
+
   function fmtSize(n: number): string {
     if (n < 1024) return `${n} B`;
     if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`;
@@ -165,6 +172,8 @@
     gif: "image",
   };
 </script>
+
+<svelte:window onkeydown={onKeydown} />
 
 <!-- Drawer lateral derecho -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
