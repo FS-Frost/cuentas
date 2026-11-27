@@ -7,6 +7,15 @@
     <link rel="icon" href="%sveltekit.assets%/icon-192.png" />
     <link rel="manifest" href="%sveltekit.assets%/manifest.webmanifest" />
     <title>Cuentas</title>
+    <script>
+      // Tema antes de pintar (evita parpadeo). Misma lógica que src/lib/theme.svelte.ts.
+      (function () {
+        var pref = "system";
+        try { pref = localStorage.getItem("cuentas-theme") || "system"; } catch (e) {}
+        var dark = pref === "dark" || (pref === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.classList.toggle("dark", dark);
+      })();
+    </script>
     %sveltekit.head%
   </head>
   <body data-sveltekit-preload-data="hover">
