@@ -7,20 +7,30 @@
     <link rel="icon" href="/cuentas/icon-192.png" />
     <link rel="manifest" href="/cuentas/manifest.webmanifest" />
     <title>Cuentas</title>
-    <link href="/cuentas/_app/immutable/entry/start.B07UADdd.js" rel="modulepreload">
-		<link href="/cuentas/_app/immutable/chunks/BOfnT-Ho.js" rel="modulepreload">
-		<link href="/cuentas/_app/immutable/chunks/CRwi0Swc.js" rel="modulepreload">
-		<link href="/cuentas/_app/immutable/entry/app.CeNpwYI6.js" rel="modulepreload">
+    <script>
+      // Tema antes de pintar (evita parpadeo). Misma lógica que src/lib/theme.svelte.ts.
+      (function () {
+        var pref = "system";
+        try { pref = localStorage.getItem("cuentas-theme") || "system"; } catch (e) {}
+        var dark = pref === "dark" || (pref === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.classList.toggle("dark", dark);
+      })();
+    </script>
+    <link href="/cuentas/_app/immutable/entry/start.DHbQhx05.js" rel="modulepreload">
+		<link href="/cuentas/_app/immutable/chunks/B6v-jN0V.js" rel="modulepreload">
+		<link href="/cuentas/_app/immutable/chunks/CvjlgMOo.js" rel="modulepreload">
+		<link href="/cuentas/_app/immutable/entry/app.BrqdU0TM.js" rel="modulepreload">
 		<link href="/cuentas/_app/immutable/chunks/xihTtKlq.js" rel="modulepreload">
-		<link href="/cuentas/_app/immutable/nodes/0.CZzI53Hb.js" rel="modulepreload">
+		<link href="/cuentas/_app/immutable/nodes/0.BBlSuudL.js" rel="modulepreload">
+		<link href="/cuentas/_app/immutable/chunks/COlvDwbH.js" rel="modulepreload">
 		
-		<link href="/cuentas/_app/immutable/assets/0.Bbw3Ni9H.css" rel="stylesheet">
+		<link href="/cuentas/_app/immutable/assets/0.CqGibAfK.css" rel="stylesheet">
   </head>
   <body data-sveltekit-preload-data="hover">
     <div id="app" style="display: contents">
 			<script>
 				{
-					__sveltekit_1v3ti60 = {
+					__sveltekit_1kfgrjo = {
 						base: "/cuentas",
 						assets: "/cuentas"
 					};
@@ -28,8 +38,8 @@
 					const element = document.currentScript.parentElement;
 
 					Promise.all([
-						import("/cuentas/_app/immutable/entry/start.B07UADdd.js"),
-						import("/cuentas/_app/immutable/entry/app.CeNpwYI6.js")
+						import("/cuentas/_app/immutable/entry/start.DHbQhx05.js"),
+						import("/cuentas/_app/immutable/entry/app.BrqdU0TM.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element);
 					});
