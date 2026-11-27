@@ -45,6 +45,37 @@
     if (await app.createPeriod(newYear)) showNewPeriod = false;
   }
 
+  // Renombrar / eliminar el año seleccionado
+  let showRenamePeriod = $state(false);
+  let renameYear = $state("");
+  let showDeletePeriod = $state(false);
+  let deleteTyped = $state("");
+
+  function openRenamePeriod() {
+    renameYear = app.period;
+    showRenamePeriod = true;
+  }
+
+  async function submitRenamePeriod() {
+    const to = renameYear.trim();
+    if (!/^\d{4}$/.test(to)) return; // el botón ya está deshabilitado
+    showRenamePeriod = false; // la pantalla de carga muestra el avance
+    selected = null;
+    await app.renamePeriod(to);
+  }
+
+  function openDeletePeriod() {
+    deleteTyped = "";
+    showDeletePeriod = true;
+  }
+
+  async function submitDeletePeriod() {
+    if (deleteTyped.trim() !== app.period) return;
+    showDeletePeriod = false;
+    selected = null;
+    await app.deletePeriod();
+  }
+
   async function submitNewService() {
     const ok = await app.createService(svcCategoria.trim() || null, svcNombre);
     if (ok) {
@@ -72,7 +103,12 @@
   <Onboarding />
 {:else}
   <div class="flex h-full flex-col">
-    <TopBar onNewPeriod={() => (showNewPeriod = true)} onSearch={runSearch} />
+    <TopBar
+      onNewPeriod={() => (showNewPeriod = true)}
+      onRenamePeriod={openRenamePeriod}
+      onDeletePeriod={openDeletePeriod}
+      onSearch={runSearch}
+    />
 
     <main class="flex-1 overflow-y-auto">
       {#if app.periods.length === 0}
@@ -115,6 +151,53 @@
     {#snippet footer()}
       <button class="rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100" onclick={() => (showNewPeriod = false)}>Cancelar</button>
       <button class="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700" onclick={submitNewPeriod}>Crear</button>
+    {/snippet}
+  </Modal>
+{/if}
+
+<!-- Modal: renombrar año -->
+{#if showRenamePeriod}
+  {@const valid = /^\d{4}$/.test(renameYear.trim()) && renameYear.trim() !== app.period}
+  <Modal title={`Renombrar año ${app.period}`} onClose={() => (showRenamePeriod = false)}>
+    <label class="mb-1 block text-sm text-slate-500" for="rename-year">Nuevo año (4 dígitos)</label>
+    <input
+      id="rename-year"
+      class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+      bind:value={renameYear}
+      onkeydown={(e) => e.key === "Enter" && valid && submitRenamePeriod()}
+    />
+    <p class="mt-2 text-xs text-slate-400">
+      Se copian todas sus carpetas y comprobantes al nombre nuevo y luego se borra el original;
+      con muchos archivos puede tardar. Las notas se conservan.
+    </p>
+    {#snippet footer()}
+      <button class="rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100" onclick={() => (showRenamePeriod = false)}>Cancelar</button>
+      <button class="rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50" onclick={submitRenamePeriod} disabled={!valid}>Renombrar</button>
+    {/snippet}
+  </Modal>
+{/if}
+
+<!-- Modal: eliminar año (confirmación escrita) -->
+{#if showDeletePeriod}
+  {@const matches = deleteTyped.trim() === app.period}
+  <Modal title={`Eliminar año ${app.period}`} onClose={() => (showDeletePeriod = false)}>
+    <p class="text-sm text-slate-600">
+      Se borran del disco <strong>todos los meses, servicios y comprobantes</strong> de
+      {app.period}, de forma definitiva (no pasa por la papelera) y no se puede deshacer.
+    </p>
+    <label class="mb-1 mt-3 block text-sm text-slate-500" for="delete-year">
+      Escribe <strong>{app.period}</strong> para confirmar
+    </label>
+    <input
+      id="delete-year"
+      class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+      bind:value={deleteTyped}
+      autocomplete="off"
+      onkeydown={(e) => e.key === "Enter" && matches && submitDeletePeriod()}
+    />
+    {#snippet footer()}
+      <button class="rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100" onclick={() => (showDeletePeriod = false)}>Cancelar</button>
+      <button class="rounded-md bg-rose-600 px-3 py-1.5 text-sm text-white hover:bg-rose-700 disabled:opacity-50" onclick={submitDeletePeriod} disabled={!matches}>Eliminar {app.period}</button>
     {/snippet}
   </Modal>
 {/if}

@@ -53,7 +53,8 @@ Para agregar una operación: lógica en `domain/accounts.ts` (con test en `tests
 ### Reglas de la plataforma
 
 - Solo Chrome/Edge de escritorio (File System Access API). En otros navegadores `Onboarding` muestra "Navegador no soportado".
-- **Eliminar es definitivo** (`removeEntry`, no hay papelera). La UI siempre confirma con `ConfirmModal` y lo dice explícitamente.
+- **Eliminar es definitivo** (`removeEntry`, no hay papelera). La UI siempre confirma con `ConfirmModal` y lo dice explícitamente; eliminar un año entero exige además escribir el año para habilitar el botón.
+- Años: se renombran y eliminan desde la barra superior (`renamePeriod`/`deletePeriod` en el store); `renameEntry` exige 4 dígitos para un periodo (si no, `listPeriods` dejaría de verlo). Los meses son fijos (`NN. Nombre`) y **no** se renombran, eliminan ni vacían desde la UI.
 - No existe "abrir con el sistema" ni "mostrar en carpeta".
 - `move()` no está disponible para directorios en Chromium (verificado en Edge): renombrar periodo/mes/servicio usa el fallback copiar + borrar. Si se interrumpe, puede quedar una copia parcial con el nombre nuevo (la original queda intacta).
 - El navegador no expone rutas absolutas; solo el nombre de la carpeta raíz.

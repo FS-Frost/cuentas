@@ -353,6 +353,51 @@ describe("inspectRoot", () => {
   });
 });
 
+describe("gestionar años", () => {
+  test("renombrar un año mueve su contenido y migra las notas", async () => {
+    await accounts.createPeriod(fsx, "2062");
+    await accounts.createService(fsx, "2062", "04", null, "Luz");
+    await accounts.importFiles(fsx, "2062", "04", "Luz", [{ name: "a.pdf", data: blob("A") }]);
+    await accounts.setNotes(fsx, "2062", "04", "Luz", "nota");
+
+    await accounts.renameEntry(fsx, { kind: "period", period: "2062" }, "2026");
+
+    expect(await accounts.listPeriods(fsx)).toEqual(["2026"]);
+    expect((await accounts.listFiles(fsx, "2026", "04", "Luz")).map((f) => f.name)).toEqual(["a.pdf"]);
+    expect(await accounts.getNotes(fsx, "2026", "04", "Luz")).toBe("nota");
+    expect(Object.keys((await readMetadata(fsx)).notes)).toEqual(["2026/04/Luz"]);
+  });
+
+  test("renombrar un año sin move nativo (copia + borrado)", async () => {
+    const noMove = nodeFs(root, { withMove: false });
+    await accounts.createPeriod(noMove, "2062");
+    await accounts.createService(noMove, "2062", "04", null, "Luz");
+    await accounts.renameEntry(noMove, { kind: "period", period: "2062" }, "2026");
+    expect(await accounts.listPeriods(noMove)).toEqual(["2026"]);
+    expect((await accounts.listServices(noMove, "2026", "04")).map((s) => s.folder)).toEqual(["Luz"]);
+  });
+
+  test("renombrar a un año existente o a algo que no es año falla", async () => {
+    await accounts.createPeriod(fsx, "2025");
+    await accounts.createPeriod(fsx, "2062");
+    await expect(
+      accounts.renameEntry(fsx, { kind: "period", period: "2062" }, "2025"),
+    ).rejects.toThrow("Ya existe");
+    await expect(
+      accounts.renameEntry(fsx, { kind: "period", period: "2062" }, "Viejo"),
+    ).rejects.toThrow("4 dígitos");
+    expect(await accounts.listPeriods(fsx)).toEqual(["2062", "2025"]);
+  });
+
+  test("eliminar un año borra su carpeta completa", async () => {
+    await accounts.createPeriod(fsx, "2025");
+    await accounts.createPeriod(fsx, "2062");
+    await accounts.createService(fsx, "2062", "04", null, "Luz");
+    await accounts.deleteEntry(fsx, { kind: "period", period: "2062" });
+    expect(await accounts.listPeriods(fsx)).toEqual(["2025"]);
+  });
+});
+
 describe("eliminar", () => {
   test("deleteEntry borra un servicio con su contenido", async () => {
     await accounts.createPeriod(fsx, "2026");

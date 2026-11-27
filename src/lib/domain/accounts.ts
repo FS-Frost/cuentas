@@ -234,6 +234,10 @@ export async function renameEntry(fs: Fs, target: TargetRef, newName: string): P
   const nameError = validateName(newName);
   if (nameError) throw new Error(nameError);
   const name = newName.trim();
+  // Un periodo con nombre que no es año deja de listarse (listPeriods solo ve 4 dígitos).
+  if (target.kind === "period" && !isValidYear(name)) {
+    throw new Error("El periodo debe ser un año de 4 dígitos.");
+  }
 
   const from = await targetPath(fs, target);
   if (from[from.length - 1] === name) return;

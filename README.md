@@ -28,7 +28,8 @@ API: **tus archivos nunca salen de tu equipo** (el sitio es estático, sin backe
   12 meses; después agregas tus cuentas con «+ Servicio»). Si eliges por error la
   carpeta de un año (ej. `Cuentas\2026`), la app avisa y no la usa.
 - Carpeta raíz recordada entre visitas (puede pedir "Reconectar" con un clic al volver).
-- Crear periodos (año) → genera los 12 meses automáticamente.
+- Crear periodos (año) → genera los 12 meses automáticamente. Renombrar o eliminar un
+  año desde la barra superior (eliminar pide escribir el año para confirmar).
 - Dashboard por mes con tarjetas de servicio.
 - **Estado automático**: un servicio con ≥1 comprobante = _pagado_; sin comprobantes = _pendiente_.
 - Categoría opcional por prefijo `[X]` en el nombre del servicio.

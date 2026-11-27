@@ -4,8 +4,15 @@
 
   let {
     onNewPeriod,
+    onRenamePeriod,
+    onDeletePeriod,
     onSearch,
-  }: { onNewPeriod: () => void; onSearch: (q: string) => void } = $props();
+  }: {
+    onNewPeriod: () => void;
+    onRenamePeriod: () => void;
+    onDeletePeriod: () => void;
+    onSearch: (q: string) => void;
+  } = $props();
 
   let query = $state("");
 
@@ -40,6 +47,20 @@
       onclick={onNewPeriod}
       title="Nuevo periodo (año)"
     >+ Año</button>
+    {#if app.period}
+      <button
+        class="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+        onclick={onRenamePeriod}
+        title="Renombrar año {app.period}"
+        aria-label="Renombrar año {app.period}"
+      ><Icon name="pencil" class="h-4 w-4" /></button>
+      <button
+        class="rounded-md p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+        onclick={onDeletePeriod}
+        title="Eliminar año {app.period}"
+        aria-label="Eliminar año {app.period}"
+      ><Icon name="trash" class="h-4 w-4" /></button>
+    {/if}
   </div>
 
   <!-- Mes -->

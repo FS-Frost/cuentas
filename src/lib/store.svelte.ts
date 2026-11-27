@@ -347,6 +347,57 @@ class AppStore {
     return true;
   }
 
+  /**
+   * Renombra el año seleccionado. En Edge no hay move() para carpetas, así que
+   * copia todo y borra la original: puede tardar; se muestra la pantalla de carga.
+   */
+  async renamePeriod(newYear: string): Promise<boolean> {
+    const from = this.period;
+    const to = newYear.trim();
+    if (!from || to === from) return true;
+    this.loadingStep = `Renombrando ${from} a ${to}…`;
+    this.loading = true;
+    try {
+      const res = await api.renameEntry({ target: { kind: "period", period: from }, newName: to });
+      if (!res.ok) {
+        pushToast(res.error ?? "No se pudo renombrar el año.", "error");
+        return false;
+      }
+      this.period = to;
+      await this.loadAll();
+      this.pendingTick += 1;
+      pushToast(`Año ${from} renombrado a ${to}.`, "success");
+      return true;
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  /** Elimina el año seleccionado con todos sus comprobantes (definitivo). */
+  async deletePeriod(): Promise<boolean> {
+    const year = this.period;
+    if (!year) return false;
+    this.loadingStep = `Eliminando ${year}…`;
+    this.loading = true;
+    try {
+      const res = await api.deleteEntry({ target: { kind: "period", period: year } });
+      if (!res.ok) {
+        pushToast(res.error ?? "No se pudo eliminar el año.", "error");
+        return false;
+      }
+      // loadAll elige el año más reciente que quede; si no queda ninguno, ninguno.
+      this.period = "";
+      this.months = [];
+      this.view = "dashboard";
+      await this.loadAll();
+      this.pendingTick += 1;
+      pushToast(`Año ${year} eliminado.`, "success");
+      return true;
+    } finally {
+      this.loading = false;
+    }
+  }
+
   async createService(categoria: string | null, nombre: string): Promise<boolean> {
     const res = await api.createService({
       period: this.period,
